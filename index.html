@@ -1291,7 +1291,142 @@
                 }
             }
         }
+// 🔒 نظام الحماية المتقدم لموقع جميل غانم
+class SecurityManager {
+    constructor() {
+        this.maxLoginAttempts = 3;
+        this.lockoutDuration = 15 * 60 * 1000; // 15 دقيقة
+        this.sessionTimeout = 30 * 60 * 1000; // 30 دقيقة
+        this.loginAttempts = this.getLoginAttempts();
+        this.lastActivity = Date.now();
+        this.initSecurity();
+    }
 
+    initSecurity() {
+        this.checkLockout();
+        this.setupSessionTimeout();
+        this.monitorActivity();
+        console.log('🛡️ نظام الحماية نشط - موقع جميل غانم محمي');
+    }
+
+    getLoginAttempts() {
+        const attempts = localStorage.getItem('jameel_admin_attempts');
+        return attempts ? JSON.parse(attempts) : { count: 0, timestamp: 0 };
+    }
+
+    saveLoginAttempts(attempts) {
+        localStorage.setItem('jameel_admin_attempts', JSON.stringify(attempts));
+    }
+
+    isLockedOut() {
+        const now = Date.now();
+        if (this.loginAttempts.count >= this.maxLoginAttempts) {
+            const timeSinceLockout = now - this.loginAttempts.timestamp;
+            return timeSinceLockout < this.lockoutDuration;
+        }
+        return false;
+    }
+
+    getRemainingLockoutTime() {
+        const now = Date.now();
+        const timeSinceLockout = now - this.loginAttempts.timestamp;
+        const remaining = this.lockoutDuration - timeSinceLockout;
+        return Math.max(0, Math.ceil(remaining / 1000 / 60));
+    }
+
+    checkLockout() {
+        if (this.isLockedOut()) {
+            const remaining = this.getRemainingLockoutTime();
+            if (remaining > 0) {
+                this.showLockoutMessage(remaining);
+                return true;
+            } else {
+                this.resetLoginAttempts();
+            }
+        }
+        return false;
+    }
+
+    recordFailedLogin() {
+        this.loginAttempts.count++;
+        this.loginAttempts.timestamp = Date.now();
+        this.saveLoginAttempts(this.loginAttempts);
+        this.logSecurityEvent('محاولة دخول فاشلة', {
+            attempts: this.loginAttempts.count,
+            timestamp: new Date().toLocaleString('ar-SA')
+        });
+    }
+
+    recordSuccessfulLogin() {
+        this.resetLoginAttempts();
+        this.lastActivity = Date.now();
+        this.logSecurityEvent('دخول ناجح للمدير', {
+            timestamp: new Date().toLocaleString('ar-SA')
+        });
+    }
+
+    resetLoginAttempts() {
+        this.loginAttempts = { count: 0, timestamp: 0 };
+        this.saveLoginAttempts(this.loginAttempts);
+    }
+
+    setupSessionTimeout() {
+        setInterval(() => {
+            if (isAdminLoggedIn) {
+                const timeSinceActivity = Date.now() - this.lastActivity;
+                if (timeSinceActivity > this.sessionTimeout) {
+                    this.forceLogout('انتهاء مهلة الجلسة');
+                }
+            }
+        }, 60000);
+    }
+
+    monitorActivity() {
+        ['click', 'keypress', 'mousemove', 'scroll'].forEach(event => {
+            document.addEventListener(event, () => {
+                if (isAdminLoggedIn) {
+                    this.lastActivity = Date.now();
+                }
+            });
+        });
+    }
+
+    forceLogout(reason) {
+        isAdminLoggedIn = false;
+        hideAdminPanel();
+        this.logSecurityEvent('خروج إجباري', {
+            reason: reason,
+            timestamp: new Date().toLocaleString('ar-SA')
+        });
+        alert('🔒 تم تسجيل الخروج تلقائياً: ' + reason);
+    }
+
+    showLockoutMessage(minutes) {
+        alert(`🚫 تم حظر تسجيل الدخول مؤقتاً!\n\nتم تجاوز الحد المسموح من المحاولات.\nالمحاولة مرة أخرى بعد ${minutes} دقيقة.\n\n⚠️ حماية موقع جميل غانم نشطة.`);
+        hideAdminLogin();
+    }
+
+    logSecurityEvent(event, data) {
+        const logs = JSON.parse(localStorage.getItem('jameel_security_logs') || '[]');
+        logs.push({
+            id: Date.now(),
+            event: event,
+            data: data,
+            timestamp: Date.now()
+        });
+        if (logs.length > 50) {
+            logs.splice(0, logs.length - 50);
+        }
+        localStorage.setItem('jameel_security_logs', JSON.stringify(logs));
+    }
+
+    getSecurityLogs() {
+        return JSON.parse(localStorage.getItem('jameel_security_logs') || '[]');
+    }
+}
+
+// تفعيل نظام الحماية
+const security = new SecurityManager();
         // Initialize database
         const db = new SupabaseDB();
         let isAdminLoggedIn = false;
@@ -1564,41 +1699,59 @@
             document.getElementById('adminLoginModal').classList.add('hidden');
         }
 
-        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            try {
-                const loginText = document.getElementById('loginText');
-                const loginLoading = document.getElementById('loginLoading');
-                
-                loginText.classList.add('hidden');
-                loginLoading.classList.remove('hidden');
-                
-                const username = document.getElementById('adminUsername').value;
-                const password = document.getElementById('adminPassword').value;
-                
-                const isValid = await db.checkAdmin(username, password);
-                
-                if (isValid) {
-                    isAdminLoggedIn = true;
-                    hideAdminLogin();
-                    showAdminPanel();
-                    await loadAdminContent();
-                } else {
-                    alert('اسم المستخدم أو كلمة المرور غير صحيحة');
-                }
-                
-                loginText.classList.remove('hidden');
-                loginLoading.classList.add('hidden');
-            } catch (error) {
-                console.error('Error during login:', error);
-                alert('حدث خطأ أثناء تسجيل الدخول');
-                
-                document.getElementById('loginText').classList.remove('hidden');
-                document.getElementById('loginLoading').classList.add('hidden');
+       
+document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // فحص الحظر
+    if (security.checkLockout()) {
+        return;
+    }
+    
+    try {
+        const loginText = document.getElementById('loginText');
+        const loginLoading = document.getElementById('loginLoading');
+        
+        loginText.classList.add('hidden');
+        loginLoading.classList.remove('hidden');
+        
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+        
+        if (!username || !password) {
+            alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+            loginText.classList.remove('hidden');
+            loginLoading.classList.add('hidden');
+            return;
+        }
+        
+        const isValid = await db.checkAdmin(username, password);
+        
+        if (isValid) {
+            security.recordSuccessfulLogin();
+            isAdminLoggedIn = true;
+            hideAdminLogin();
+            showAdminPanel();
+            await loadAdminContent();
+            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
+        } else {
+            security.recordFailedLogin();
+            const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
+            if (remainingAttempts > 0) {
+                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
             }
-        });
-
+        }
+        
+        loginText.classList.remove('hidden');
+        loginLoading.classList.add('hidden');
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('حدث خطأ أثناء تسجيل الدخول');
+        
+        document.getElementById('loginText').classList.remove('hidden');
+        document.getElementById('loginLoading').classList.add('hidden');
+    }
+});
         function showAdminPanel() {
             document.getElementById('adminPanel').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
