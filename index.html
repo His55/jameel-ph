@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جميل غانم - مصور فوتوغرافي محترف</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase Configuration (استبدل بإعداداتك)
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key-here';
+        
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Make Supabase available globally
+        window.supabase = supabase;
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .brand-red { background-color: #dc2626; }
+        .brand-red-hover:hover { background-color: #b91c1c; }
+        .text-brand-red { color: #dc2626; }
+        
+        .gallery-item {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .admin-panel {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        }
+        
+        .modal {
+            backdrop-filter: blur(10px);
+        }
+        
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #dc2626;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-black text-white shadow-lg fixed w-full top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <h1 class="text-2xl font-bold text-brand-red">جميل غانم</h1>
+                    <span class="text-gray-300">مصور فوتوغرافي</span>
+                </div>
+                <div class="hidden md:flex space-x-6 space-x-reverse">
+                    <a href="#home" class="hover:text-brand-red transition-colors">الرئيسية</a>
+                    <a href="#portfolio" class="hover:text-brand-red transition-colors">معرض الأعمال</a>
+                    <a href="#services" class="hover:text-brand-red transition-colors">الخدمات</a>
+                    <a href="#about" class="hover:text-brand-red transition-colors">نبذة عني</a>
+                    <a href="#contact" class="hover:text-brand-red transition-colors">التواصل</a>
+                    <button onclick="showAdminLogin()" class="bg-brand-red px-4 py-2 rounded hover:bg-red-700 transition-colors">
+                        <i class="fas fa-cog ml-2"></i>إدارة الموقع
+                    </button>
+                </div>
+                <button class="md:hidden" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-gray-900 px-4 py-4">
+            <a href="#home" class="block py-2 hover:text-brand-red">الرئيسية</a>
+            <a href="#portfolio" class="block py-2 hover:text-brand-red">معرض الأعمال</a>
+            <a href="#services" class="block py-2 hover:text-brand-red">الخدمات</a>
+            <a href="#about" class="block py-2 hover:text-brand-red">نبذة عني</a>
+            <a href="#contact" class="block py-2 hover:text-brand-red">التواصل</a>
+            <button onclick="showAdminLogin()" class="block w-full text-right py-2 text-brand-red">إدارة الموقع</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-black text-white pt-20 pb-16">
+        <div class="container mx-auto px-4 text-center">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-5xl font-bold mb-6">
+                    مرحباً بكم في عالم <span class="text-brand-red">التصوير الاحترافي</span>
+                </h2>
+                <p class="text-xl mb-8 text-gray-300" id="heroDescription">
+                    أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات
+                </p>
+                <div class="flex justify-center space-x-4 space-x-reverse">
+                    <a href="https://wa.me/967771145933" class="bg-brand-red px-8 py-3 rounded-lg hover:bg-red-700 transition-colors">
+                        <i class="fab fa-whatsapp ml-2"></i>تواصل معي
+                    </a>
+                    <a href="#portfolio" class="border border-white px-8 py-3 rounded-lg hover:bg-white hover:text-black transition-colors">
+                        استعرض أعمالي
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12 text-black">معرض الأعمال</h2>
+            
+            <!-- Filter Buttons -->
+            <div class="flex justify-center mb-8 flex-wrap gap-4">
+                <button onclick="filterPortfolio('all')" class="filter-btn bg-brand-red text-white px-6 py-2 rounded-lg">
+                    جميع الأعمال
+                </button>
+                <button onclick="filterPortfolio('wedding')" class="filter-btn bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-brand-red hover:text-white">
+                    حفلات الزفاف
+                </button>
+                <button onclick="filterPortfolio('portrait')" class="filter-btn bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-brand-red hover:text-white">
+                    جلسات تصوير
+                </button>
+                <button onclick="filterPortfolio('event')" class="filter-btn bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-brand-red hover:text-white">
+                    مناسبات
+                </button>
+                <button onclick="filterPortfolio('product')" class="filter-btn bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-brand-red hover:text-white">
+                    منتجات
+                </button>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div id="portfolioLoading" class="text-center py-8">
+                <div class="loading mx-auto"></div>
+                <p class="mt-4 text-gray-600">جاري تحميل المعرض...</p>
+            </div>
+            
+            <!-- Portfolio Grid -->
+            <div id="portfolioGrid" class="portfolio-grid hidden">
+                <!-- Portfolio items will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12 text-black">خدماتي</h2>
+            
+            <!-- Loading Indicator -->
+            <div id="servicesLoading" class="text-center py-8">
+                <div class="loading mx-auto"></div>
+                <p class="mt-4 text-gray-600">جاري تحميل الخدمات...</p>
+            </div>
+            
+            <div id="servicesGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
+                <!-- Services will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-8 text-black">نبذة عني</h2>
+                <div id="aboutLoading" class="text-center py-8">
+                    <div class="loading mx-auto"></div>
+                    <p class="mt-4 text-gray-600">جاري التحميل...</p>
+                </div>
+                <div id="aboutContent" class="text-lg text-gray-700 leading-relaxed hidden">
+                    <!-- About content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section id="articles" class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12 text-black">مقالات ونصائح</h2>
+            
+            <!-- Loading Indicator -->
+            <div id="articlesLoading" class="text-center py-8">
+                <div class="loading mx-auto"></div>
+                <p class="mt-4 text-gray-600">جاري تحميل المقالات...</p>
+            </div>
+            
+            <div id="articlesGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
+                <!-- Articles will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-black text-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">تواصل معي</h2>
+            <div class="grid md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6 text-brand-red">معلومات التواصل</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-brand-red ml-4 text-xl"></i>
+                            <span id="contactPhone">771145933</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fab fa-whatsapp text-brand-red ml-4 text-xl"></i>
+                            <a href="https://wa.me/967771145933" class="hover:text-brand-red">واتساب</a>
+                        </div>
+                        <div id="socialLinks" class="flex space-x-4 space-x-reverse mt-6">
+                            <!-- Social links will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-bold mb-6 text-brand-red">أرسل رسالة</h3>
+                    <form id="contactForm" class="space-y-4">
+                        <input type="text" id="clientName" placeholder="الاسم" class="w-full p-3 rounded bg-gray-800 text-white border border-gray-600 focus:border-brand-red" required>
+                        <input type="email" id="clientEmail" placeholder="البريد الإلكتروني" class="w-full p-3 rounded bg-gray-800 text-white border border-gray-600 focus:border-brand-red" required>
+                        <input type="tel" id="clientPhone" placeholder="رقم الهاتف" class="w-full p-3 rounded bg-gray-800 text-white border border-gray-600 focus:border-brand-red" required>
+                        <textarea id="clientMessage" placeholder="الرسالة" rows="5" class="w-full p-3 rounded bg-gray-800 text-white border border-gray-600 focus:border-brand-red" required></textarea>
+                        <button type="submit" class="w-full bg-brand-red py-3 rounded hover:bg-red-700 transition-colors">
+                            <span id="contactSubmitText">إرسال الرسالة</span>
+                            <div id="contactSubmitLoading" class="loading hidden"></div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 جميل غانم - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg p-8 max-w-md w-full">
+                <h3 class="text-2xl font-bold mb-6 text-center text-black">دخول المدير</h3>
+                <form id="adminLoginForm">
+                    <input type="text" id="adminUsername" placeholder="اسم المستخدم" class="w-full p-3 mb-4 border rounded" required>
+                    <input type="password" id="adminPassword" placeholder="كلمة المرور" class="w-full p-3 mb-6 border rounded" required>
+                    <div class="flex space-x-4 space-x-reverse">
+                        <button type="submit" class="flex-1 bg-brand-red text-white py-3 rounded hover:bg-red-700">
+                            <span id="loginText">دخول</span>
+                            <div id="loginLoading" class="loading hidden"></div>
+                        </button>
+                        <button type="button" onclick="hideAdminLogin()" class="flex-1 bg-gray-300 text-black py-3 rounded hover:bg-gray-400">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="fixed inset-0 bg-gray-900 hidden z-50 admin-panel overflow-y-auto">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Admin Header -->
+            <div class="flex justify-between items-center mb-8 bg-gray-800 p-4 rounded-lg">
+                <h2 class="text-2xl font-bold text-white">لوحة التحكم - جميل غانم</h2>
+                <button onclick="hideAdminPanel()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    <i class="fas fa-times ml-2"></i>إغلاق
+                </button>
+            </div>
+
+            <!-- Admin Navigation -->
+            <div class="flex flex-wrap gap-4 mb-8">
+                <button onclick="showAdminSection('portfolio')" class="admin-nav-btn bg-brand-red text-white px-6 py-3 rounded">
+                    <i class="fas fa-images ml-2"></i>إدارة المعرض
+                </button>
+                <button onclick="showAdminSection('services')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-briefcase ml-2"></i>إدارة الخدمات
+                </button>
+                <button onclick="showAdminSection('about')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-user ml-2"></i>السيرة الذاتية
+                </button>
+                <button onclick="showAdminSection('articles')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-newspaper ml-2"></i>المقالات
+                </button>
+                <button onclick="showAdminSection('settings')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-cog ml-2"></i>الإعدادات
+                </button>
+                <button onclick="showAdminSection('messages')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-envelope ml-2"></i>الرسائل
+                </button>
+                <button onclick="showAdminSection('account')" class="admin-nav-btn bg-gray-600 text-white px-6 py-3 rounded">
+                    <i class="fas fa-key ml-2"></i>إدارة الحساب
+                </button>
+            </div>
+
+            <!-- Admin Sections -->
+            <div id="adminContent" class="bg-gray-800 rounded-lg p-6">
+                <!-- Portfolio Management -->
+                <div id="adminPortfolio" class="admin-section">
+                    <h3 class="text-xl font-bold text-white mb-6">إدارة معرض الأعمال</h3>
+                    
+                    <!-- Add New Image Form -->
+                    <div class="bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-lg font-bold text-white mb-4">إضافة صورة جديدة</h4>
+                        <form id="addImageForm" class="space-y-4">
+                            <input type="text" id="imageTitle" placeholder="عنوان الصورة" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <select id="imageCategory" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                                <option value="">اختر الفئة</option>
+                                <option value="wedding">حفلات الزفاف</option>
+                                <option value="portrait">جلسات تصوير</option>
+                                <option value="event">مناسبات</option>
+                                <option value="product">منتجات</option>
+                            </select>
+                            <textarea id="imageDescription" placeholder="وصف الصورة" class="w-full p-3 rounded bg-gray-600 text-white" rows="3" required></textarea>
+                            <input type="file" id="imageFile" accept="image/*" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <div id="imagePreview" class="hidden">
+                                <img id="previewImg" class="image-preview rounded">
+                            </div>
+                            <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                                <span id="addImageText"><i class="fas fa-plus ml-2"></i>إضافة الصورة</span>
+                                <div id="addImageLoading" class="loading hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Existing Images -->
+                    <div id="adminPortfolioList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Portfolio items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Services Management -->
+                <div id="adminServices" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">إدارة الخدمات</h3>
+                    
+                    <!-- Add New Service Form -->
+                    <div class="bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-lg font-bold text-white mb-4">إضافة خدمة جديدة</h4>
+                        <form id="addServiceForm" class="space-y-4">
+                            <input type="text" id="serviceName" placeholder="اسم الخدمة" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <textarea id="serviceDescription" placeholder="وصف الخدمة" class="w-full p-3 rounded bg-gray-600 text-white" rows="3" required></textarea>
+                            <input type="text" id="servicePrice" placeholder="السعر (اختياري)" class="w-full p-3 rounded bg-gray-600 text-white">
+                            <select id="serviceCategory" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                                <option value="">اختر الفئة</option>
+                                <option value="photography">تصوير فوتوغرافي</option>
+                                <option value="video">تصوير فيديو</option>
+                                <option value="editing">تحرير وتعديل</option>
+                                <option value="package">باقة شاملة</option>
+                            </select>
+                            <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                                <span id="addServiceText"><i class="fas fa-plus ml-2"></i>إضافة الخدمة</span>
+                                <div id="addServiceLoading" class="loading hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Existing Services -->
+                    <div id="adminServicesList" class="space-y-4">
+                        <!-- Services will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- About Management -->
+                <div id="adminAbout" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">إدارة السيرة الذاتية</h3>
+                    <form id="aboutForm" class="space-y-4">
+                        <textarea id="aboutText" placeholder="اكتب سيرتك الذاتية وخبراتك هنا..." class="w-full p-4 rounded bg-gray-600 text-white" rows="10" required></textarea>
+                        <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                            <span id="aboutSaveText"><i class="fas fa-save ml-2"></i>حفظ التغييرات</span>
+                            <div id="aboutSaveLoading" class="loading hidden"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Articles Management -->
+                <div id="adminArticles" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">إدارة المقالات</h3>
+                    
+                    <!-- Add New Article Form -->
+                    <div class="bg-gray-700 p-6 rounded-lg mb-6">
+                        <h4 class="text-lg font-bold text-white mb-4">إضافة مقال جديد</h4>
+                        <form id="addArticleForm" class="space-y-4">
+                            <input type="text" id="articleTitle" placeholder="عنوان المقال" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <textarea id="articleContent" placeholder="محتوى المقال" class="w-full p-4 rounded bg-gray-600 text-white" rows="8" required></textarea>
+                            <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                                <span id="addArticleText"><i class="fas fa-plus ml-2"></i>إضافة المقال</span>
+                                <div id="addArticleLoading" class="loading hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Existing Articles -->
+                    <div id="adminArticlesList" class="space-y-4">
+                        <!-- Articles will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Settings Management -->
+                <div id="adminSettings" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">إعدادات الموقع</h3>
+                    <form id="settingsForm" class="space-y-4">
+                        <input type="text" id="siteTitle" placeholder="عنوان الموقع" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                        <textarea id="heroDesc" placeholder="وصف الصفحة الرئيسية" class="w-full p-3 rounded bg-gray-600 text-white" rows="3" required></textarea>
+                        <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                        <input type="url" id="facebookLink" placeholder="رابط الفيسبوك" class="w-full p-3 rounded bg-gray-600 text-white">
+                        <input type="url" id="instagramLink" placeholder="رابط الإنستغرام" class="w-full p-3 rounded bg-gray-600 text-white">
+                        <input type="url" id="twitterLink" placeholder="رابط تويتر" class="w-full p-3 rounded bg-gray-600 text-white">
+                        <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                            <span id="settingsSaveText"><i class="fas fa-save ml-2"></i>حفظ الإعدادات</span>
+                            <div id="settingsSaveLoading" class="loading hidden"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Messages Management -->
+                <div id="adminMessages" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">رسائل العملاء</h3>
+                    <div id="messagesList" class="space-y-4">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Account Management -->
+                <div id="adminAccount" class="admin-section hidden">
+                    <h3 class="text-xl font-bold text-white mb-6">إدارة الحساب</h3>
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <h4 class="text-lg font-bold text-white mb-4">تغيير بيانات الدخول</h4>
+                        <form id="accountForm" class="space-y-4">
+                            <input type="text" id="newUsername" placeholder="اسم المستخدم الجديد" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <input type="password" id="currentPassword" placeholder="كلمة المرور الحالية" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور الجديدة" class="w-full p-3 rounded bg-gray-600 text-white" required>
+                            <button type="submit" class="bg-brand-red text-white px-6 py-3 rounded hover:bg-red-700">
+                                <span id="accountSaveText"><i class="fas fa-save ml-2"></i>حفظ التغييرات</span>
+                                <div id="accountSaveLoading" class="loading hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center">
+        <div class="relative max-w-4xl max-h-full p-4">
+            <img id="lightboxImg" class="max-w-full max-h-full object-contain">
+            <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-3xl hover:text-brand-red">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Supabase Configuration Notice -->
+    <div id="supabaseNotice" class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg max-w-sm">
+        <div class="flex items-start">
+            <i class="fas fa-database text-xl ml-3 mt-1"></i>
+            <div>
+                <h4 class="font-bold mb-2">🎉 قاعدة بيانات مشتركة جاهزة!</h4>
+                <p class="text-sm mb-3">الموقع يستخدم Supabase كقاعدة بيانات مشتركة. جميع التحديثات ستظهر لكل الزوار فوراً!</p>
+                <button onclick="hideSupabaseNotice()" class="bg-white text-green-500 px-3 py-1 rounded text-sm">رائع!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Database Manager
+        class SupabaseDB {
+            constructor() {
+                this.isSupabaseReady = false;
+                this.initializeSupabase();
+            }
+
+            async initializeSupabase() {
+                try {
+                    // Check if Supabase is properly configured
+                    if (window.supabase && SUPABASE_URL !== 'https://your-project.supabase.co') {
+                        this.isSupabaseReady = true;
+                        console.log('Supabase initialized successfully');
+                        await this.initializeDefaultData();
+                    } else {
+                        console.warn('Supabase not properly configured, using demo mode');
+                        this.initializeDemoMode();
+                    }
+                } catch (error) {
+                    console.error('Supabase initialization error:', error);
+                    this.initializeDemoMode();
+                }
+            }
+
+            initializeDemoMode() {
+                // Fallback to localStorage for demo purposes
+                this.isSupabaseReady = false;
+                if (!localStorage.getItem('photographerDB')) {
+                    const demoData = {
+                        portfolio: [
+                            {
+                                id: '1',
+                                title: "حفل زفاف رائع",
+                                category: "wedding",
+                                description: "لحظات جميلة من حفل زفاف مميز",
+                                image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Ysdin2YXZhCDYstmB2KfZgTwvdGV4dD48L3N2Zz4=",
+                                created_at: new Date().toISOString()
+                            },
+                            {
+                                id: '2',
+                                title: "جلسة تصوير شخصية",
+                                category: "portrait",
+                                description: "جلسة تصوير احترافية للبورتريه",
+                                image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2VkZjJmNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7YrNmE2LPYqSDYqti12YjZitixPC90ZXh0Pjwvc3ZnPg==",
+                                created_at: new Date().toISOString()
+                            }
+                        ],
+                        services: [
+                            {
+                                id: '1',
+                                name: "تصوير حفلات الزفاف",
+                                description: "تصوير احترافي لحفلات الزفاف مع تغطية شاملة لجميع اللحظات المميزة",
+                                price: "حسب الباقة",
+                                category: "photography"
+                            },
+                            {
+                                id: '2',
+                                name: "جلسات التصوير الشخصية",
+                                description: "جلسات تصوير احترافية للأفراد والعائلات في استوديو أو خارجي",
+                                price: "200 ريال",
+                                category: "photography"
+                            }
+                        ],
+                        articles: [
+                            {
+                                id: '1',
+                                title: "نصائح للحصول على أفضل صور الزفاف",
+                                content: "في هذا المقال سأشارككم أهم النصائح للحصول على صور زفاف مثالية. أولاً، التخطيط المسبق مهم جداً...",
+                                created_at: new Date().toISOString()
+                            }
+                        ],
+                        about: "مصور فوتوغرافي محترف بخبرة تزيد عن 10 سنوات في مجال التصوير. متخصص في تصوير حفلات الزفاف والمناسبات الخاصة والجلسات الشخصية. أسعى دائماً لتقديم أفضل جودة وخدمة لعملائي.",
+                        settings: {
+                            site_title: "جميل غانم - مصور فوتوغرافي",
+                            hero_description: "أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات",
+                            phone: "771145933",
+                            facebook_link: "",
+                            instagram_link: "",
+                            twitter_link: ""
+                        },
+                        messages: [],
+                        admin: {
+                            username: "admin",
+                            password: "123456"
+                        }
+                    };
+                    localStorage.setItem('photographerDB', JSON.stringify(demoData));
+                }
+            }
+
+            async initializeDefaultData() {
+                if (!this.isSupabaseReady) return;
+
+                try {
+                    // Check if data already exists
+                    const { data: portfolio } = await window.supabase
+                        .from('portfolio')
+                        .select('*')
+                        .limit(1);
+                    
+                    if (!portfolio || portfolio.length === 0) {
+                        // Initialize with default data
+                        await this.createDefaultData();
+                    }
+                } catch (error) {
+                    console.error('Error initializing default data:', error);
+                }
+            }
+
+            async createDefaultData() {
+                try {
+                    // Default portfolio items
+                    const defaultPortfolio = [
+                        {
+                            title: "حفل زفاف رائع",
+                            category: "wedding",
+                            description: "لحظات جميلة من حفل زفاف مميز",
+                            image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Ysdin2YXZhCDYstmB2KfZgTwvdGV4dD48L3N2Zz4="
+                        },
+                        {
+                            title: "جلسة تصوير شخصية",
+                            category: "portrait",
+                            description: "جلسة تصوير احترافية للبورتريه",
+                            image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2VkZjJmNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7YrNmE2LPYqSDYqti12YjZitixPC90ZXh0Pjwvc3ZnPg=="
+                        }
+                    ];
+
+                    // Default services
+                    const defaultServices = [
+                        {
+                            name: "تصوير حفلات الزفاف",
+                            description: "تصوير احترافي لحفلات الزفاف مع تغطية شاملة لجميع اللحظات المميزة",
+                            price: "حسب الباقة",
+                            category: "photography"
+                        },
+                        {
+                            name: "جلسات التصوير الشخصية",
+                            description: "جلسات تصوير احترافية للأفراد والعائلات في استوديو أو خارجي",
+                            price: "200 ريال",
+                            category: "photography"
+                        }
+                    ];
+
+                    // Add default data
+                    await window.supabase.from('portfolio').insert(defaultPortfolio);
+                    await window.supabase.from('services').insert(defaultServices);
+
+                    // Add default settings
+                    await window.supabase.from('settings').insert({
+                        site_title: "جميل غانم - مصور فوتوغرافي",
+                        hero_description: "أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات",
+                        phone: "771145933",
+                        facebook_link: "",
+                        instagram_link: "",
+                        twitter_link: ""
+                    });
+
+                    // Add default about
+                    await window.supabase.from('about').insert({
+                        content: "مصور فوتوغرافي محترف بخبرة تزيد عن 10 سنوات في مجال التصوير. متخصص في تصوير حفلات الزفاف والمناسبات الخاصة."
+                    });
+
+                    // Add default admin
+                    await window.supabase.from('admin').insert({
+                        username: "admin",
+                        password: "123456"
+                    });
+
+                    console.log('Default data created successfully');
+                } catch (error) {
+                    console.error('Error creating default data:', error);
+                }
+            }
+
+            // Portfolio methods
+            async getPortfolio() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.portfolio || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('portfolio')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting portfolio:', error);
+                    return [];
+                }
+            }
+
+            async addPortfolioItem(item) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    item.id = Date.now().toString();
+                    item.created_at = new Date().toISOString();
+                    data.portfolio = data.portfolio || [];
+                    data.portfolio.push(item);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return item;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('portfolio')
+                        .insert([item])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            async updatePortfolioItem(id, updatedItem) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.portfolio.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.portfolio[index] = { ...data.portfolio[index], ...updatedItem };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
+                    }
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('portfolio')
+                        .update(updatedItem)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            async deletePortfolioItem(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.portfolio = data.portfolio.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('portfolio')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            // Services methods
+            async getServices() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.services || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('services')
+                        .select('*');
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting services:', error);
+                    return [];
+                }
+            }
+
+            async addService(service) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    service.id = Date.now().toString();
+                    data.services = data.services || [];
+                    data.services.push(service);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return service;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('services')
+                        .insert([service])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding service:', error);
+                    throw error;
+                }
+            }
+
+            async updateService(id, updatedService) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.services.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.services[index] = { ...data.services[index], ...updatedService };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
+                    }
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('services')
+                        .update(updatedService)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating service:', error);
+                    throw error;
+                }
+            }
+
+            async deleteService(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.services = data.services.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('services')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting service:', error);
+                    throw error;
+                }
+            }
+
+            // Articles methods
+            async getArticles() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.articles || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('articles')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting articles:', error);
+                    return [];
+                }
+            }
+
+            async addArticle(article) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    article.id = Date.now().toString();
+                    article.created_at = new Date().toISOString();
+                    data.articles = data.articles || [];
+                    data.articles.push(article);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return article;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('articles')
+                        .insert([article])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding article:', error);
+                    throw error;
+                }
+            }
+
+            async updateArticle(id, updatedArticle) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.articles.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.articles[index] = { ...data.articles[index], ...updatedArticle };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
+                    }
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('articles')
+                        .update(updatedArticle)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating article:', error);
+                    throw error;
+                }
+            }
+
+            async deleteArticle(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.articles = data.articles.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('articles')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting article:', error);
+                    throw error;
+                }
+            }
+
+            // About methods
+            async getAbout() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.about || '';
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('about')
+                        .select('content')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0].content : '';
+                } catch (error) {
+                    console.error('Error getting about:', error);
+                    return '';
+                }
+            }
+
+            async updateAbout(content) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.about = content;
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('about')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('about')
+                            .update({ content })
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('about')
+                            .insert([{ content }]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating about:', error);
+                    throw error;
+                }
+            }
+
+            // Settings methods
+            async getSettings() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.settings || {};
+                }
+
+                               try {
+                    const { data, error } = await window.supabase
+                        .from('settings')
+                        .select('*')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0] : {};
+                } catch (error) {
+                    console.error('Error getting settings:', error);
+                    return {};
+                }
+            }
+
+            async updateSettings(settings) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.settings = { ...data.settings, ...settings };
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('settings')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('settings')
+                            .update(settings)
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('settings')
+                            .insert([settings]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating settings:', error);
+                    throw error;
+                }
+            }
+
+            // Messages methods
+            async getMessages() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.messages || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('messages')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting messages:', error);
+                    return [];
+                }
+            }
+
+            async addMessage(message) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    message.id = Date.now().toString();
+                    message.created_at = new Date().toISOString();
+                    data.messages = data.messages || [];
+                    data.messages.push(message);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return message;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('messages')
+                        .insert([message])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding message:', error);
+                    throw error;
+                }
+            }
+
+            async deleteMessage(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.messages = data.messages.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('messages')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting message:', error);
+                    throw error;
+                }
+            }
+
+            // Admin methods
+            async checkAdmin(username, password) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const admin = data.admin || {};
+                    return admin.username === username && admin.password === password;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('admin')
+                        .select('*')
+                        .eq('username', username)
+                        .eq('password', password)
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0;
+                } catch (error) {
+                    console.error('Error checking admin:', error);
+                    return false;
+                }
+            }
+
+            async updateAdmin(username, password) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.admin = { username, password };
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('admin')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('admin')
+                            .update({ username, password })
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('admin')
+                            .insert([{ username, password }]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating admin:', error);
+                    throw error;
+                }
+            }
+
+            async getAdmin() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.admin || {};
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('admin')
+                        .select('*')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0] : {};
+                } catch (error) {
+                    console.error('Error getting admin:', error);
+                    return {};
+                }
+            }
+
+            // Image upload method
+            async uploadImage(file) {
+                if (!this.isSupabaseReady) {
+                    // Convert to base64 for demo mode
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                try {
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const { data, error } = await window.supabase.storage
+                        .from('images')
+                        .upload(fileName, file);
+
+                    if (error) throw error;
+
+                    // Get public URL
+                    const { data: { publicUrl } } = window.supabase.storage
+                        .from('images')
+                        .getPublicUrl(fileName);
+
+                    return publicUrl;
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    // Fallback to base64 if upload fails
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+        }
+
+        // Initialize database
+        const db = new SupabaseDB();
+        let isAdminLoggedIn = false;
+
+        // Utility functions
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) element.classList.remove('hidden');
+        }
+
+        function hideLoading(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) element.classList.add('hidden');
+        }
+
+        function showContent(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) element.classList.remove('hidden');
+        }
+
+        function hideContent(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) element.classList.add('hidden');
+        }
+
+        // Load initial content
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for Supabase to initialize
+            setTimeout(async () => {
+                await loadPortfolio();
+                await loadServices();
+                await loadAbout();
+                await loadArticles();
+                await loadSettings();
+            }, 1000);
+        });
+
+        // Navigation functions
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Portfolio functions
+        async function loadPortfolio() {
+            try {
+                showLoading('portfolioLoading');
+                hideContent('portfolioGrid');
+                
+                const portfolio = await db.getPortfolio();
+                const grid = document.getElementById('portfolioGrid');
+                
+                if (portfolio.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
+                } else {
+                    grid.innerHTML = portfolio.map(item => `
+                        <div class="gallery-item portfolio-item" data-category="${item.category}">
+                            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                                <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
+                                <div class="p-4">
+                                    <h3 class="font-bold text-lg mb-2">${item.title}</h3>
+                                    <p class="text-gray-600 text-sm">${item.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                hideLoading('portfolioLoading');
+                showContent('portfolioGrid');
+            } catch (error) {
+                console.error('Error loading portfolio:', error);
+                hideLoading('portfolioLoading');
+                showContent('portfolioGrid');
+                document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
+            }
+        }
+
+        function filterPortfolio(category) {
+            const items = document.querySelectorAll('.portfolio-item');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            // Update button styles
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-brand-red', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-black');
+            });
+            event.target.classList.remove('bg-gray-200', 'text-black');
+            event.target.classList.add('bg-brand-red', 'text-white');
+            
+            // Filter items
+            items.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Services functions
+        async function loadServices() {
+            try {
+                showLoading('servicesLoading');
+                hideContent('servicesGrid');
+                
+                const services = await db.getServices();
+                const grid = document.getElementById('servicesGrid');
+                
+                if (services.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد خدمات متاحة حالياً</div>';
+                } else {
+                    grid.innerHTML = services.map(service => `
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <h3 class="font-bold text-xl mb-4 text-brand-red">${service.name}</h3>
+                            <p class="text-gray-700 mb-4">${service.description}</p>
+                            ${service.price ? `<div class="text-lg font-bold text-black">${service.price}</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                hideLoading('servicesLoading');
+                showContent('servicesGrid');
+            } catch (error) {
+                console.error('Error loading services:', error);
+                hideLoading('servicesLoading');
+                showContent('servicesGrid');
+                document.getElementById('servicesGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل الخدمات</div>';
+            }
+        }
+
+        // About functions
+        async function loadAbout() {
+            try {
+                showLoading('aboutLoading');
+                hideContent('aboutContent');
+                
+                const about = await db.getAbout();
+                const content = document.getElementById('aboutContent');
+                
+                if (about) {
+                    content.innerHTML = `<p>${about}</p>`;
+                } else {
+                    content.innerHTML = '<p class="text-gray-600">لم يتم إضافة السيرة الذاتية بعد</p>';
+                }
+                
+                hideLoading('aboutLoading');
+                showContent('aboutContent');
+            } catch (error) {
+                console.error('Error loading about:', error);
+                hideLoading('aboutLoading');
+                showContent('aboutContent');
+                document.getElementById('aboutContent').innerHTML = '<p class="text-red-600">حدث خطأ في تحميل السيرة الذاتية</p>';
+            }
+        }
+
+        // Articles functions
+        async function loadArticles() {
+            try {
+                showLoading('articlesLoading');
+                hideContent('articlesGrid');
+                
+                const articles = await db.getArticles();
+                const grid = document.getElementById('articlesGrid');
+                
+                if (articles.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد مقالات متاحة حالياً</div>';
+                } else {
+                    grid.innerHTML = articles.map(article => `
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <h3 class="font-bold text-xl mb-4 text-brand-red">${article.title}</h3>
+                            <p class="text-gray-700">${article.content.substring(0, 150)}...</p>
+                            <div class="mt-4 text-sm text-gray-500">
+                                ${new Date(article.created_at).toLocaleDateString('ar-SA')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                hideLoading('articlesLoading');
+                showContent('articlesGrid');
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                hideLoading('articlesLoading');
+                showContent('articlesGrid');
+                document.getElementById('articlesGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المقالات</div>';
+            }
+        }
+
+        // Settings functions
+        async function loadSettings() {
+            try {
+                const settings = await db.getSettings();
+                
+                if (settings.hero_description) {
+                    document.getElementById('heroDescription').textContent = settings.hero_description;
+                }
+                
+                if (settings.phone) {
+                    document.getElementById('contactPhone').textContent = settings.phone;
+                }
+                
+                // Load social links
+                const socialLinks = document.getElementById('socialLinks');
+                let linksHTML = '';
+                if (settings.facebook_link) {
+                    linksHTML += `<a href="${settings.facebook_link}" class="text-blue-500 hover:text-blue-400"><i class="fab fa-facebook text-2xl"></i></a>`;
+                }
+                if (settings.instagram_link) {
+                    linksHTML += `<a href="${settings.instagram_link}" class="text-pink-500 hover:text-pink-400"><i class="fab fa-instagram text-2xl"></i></a>`;
+                }
+                if (settings.twitter_link) {
+                    linksHTML += `<a href="${settings.twitter_link}" class="text-blue-400 hover:text-blue-300"><i class="fab fa-twitter text-2xl"></i></a>`;
+                }
+                socialLinks.innerHTML = linksHTML;
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Contact form
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const submitBtn = document.getElementById('contactSubmitText');
+                const loadingBtn = document.getElementById('contactSubmitLoading');
+                
+                submitBtn.classList.add('hidden');
+                loadingBtn.classList.remove('hidden');
+                
+                const message = {
+                    name: document.getElementById('clientName').value,
+                    email: document.getElementById('clientEmail').value,
+                    phone: document.getElementById('clientPhone').value,
+                    message: document.getElementById('clientMessage').value
+                };
+                
+                await db.addMessage(message);
+                alert('تم إرسال رسالتك بنجاح! سأتواصل معك قريباً.');
+                this.reset();
+                
+                submitBtn.classList.remove('hidden');
+                loadingBtn.classList.add('hidden');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('حدث خطأ في إرسال الرسالة. يرجى المحاولة مرة أخرى.');
+                
+                document.getElementById('contactSubmitText').classList.remove('hidden');
+                document.getElementById('contactSubmitLoading').classList.add('hidden');
+            }
+        });
+
+        // Lightbox functions
+        function openLightbox(imageSrc) {
+            document.getElementById('lightboxImg').src = imageSrc;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+
+        // Admin functions
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+        }
+
+        function hideAdminLogin() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const loginText = document.getElementById('loginText');
+                const loginLoading = document.getElementById('loginLoading');
+                
+                loginText.classList.add('hidden');
+                loginLoading.classList.remove('hidden');
+                
+                const username = document.getElementById('adminUsername').value;
+                const password = document.getElementById('adminPassword').value;
+                
+                const isValid = await db.checkAdmin(username, password);
+                
+                if (isValid) {
+                    isAdminLoggedIn = true;
+                    hideAdminLogin();
+                    showAdminPanel();
+                    await loadAdminContent();
+                } else {
+                    alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+                }
+                
+                loginText.classList.remove('hidden');
+                loginLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert('حدث خطأ أثناء تسجيل الدخول');
+                
+                document.getElementById('loginText').classList.remove('hidden');
+                document.getElementById('loginLoading').classList.add('hidden');
+            }
+        });
+
+        function showAdminPanel() {
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            isAdminLoggedIn = false;
+        }
+
+        function showAdminSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('hidden'));
+            
+            // Update navigation buttons
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-red');
+                btn.classList.add('bg-gray-600');
+            });
+            
+            // Show selected section
+            document.getElementById('admin' + section.charAt(0).toUpperCase() + section.slice(1)).classList.remove('hidden');
+            
+            // Update active button
+            event.target.classList.remove('bg-gray-600');
+            event.target.classList.add('bg-brand-red');
+        }
+
+        async function loadAdminContent() {
+            await loadAdminPortfolio();
+            await loadAdminServices();
+            await loadAdminArticles();
+            await loadAdminMessages();
+            await loadAdminSettings();
+            await loadAdminAccount();
+        }
+
+        // Admin Portfolio Management
+        async function loadAdminPortfolio() {
+            try {
+                const portfolio = await db.getPortfolio();
+                const list = document.getElementById('adminPortfolioList');
+                
+                if (portfolio.length === 0) {
+                    list.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400">لا توجد صور في المعرض</div>';
+                } else {
+                    list.innerHTML = portfolio.map(item => `
+                        <div class="bg-gray-600 p-4 rounded-lg">
+                            <img src="${item.image_url}" alt="${item.title}" class="w-full h-32 object-cover rounded mb-3">
+                            <h4 class="text-white font-bold mb-2">${item.title}</h4>
+                            <p class="text-gray-300 text-sm mb-3">${item.description}</p>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <button onclick="editPortfolioItem('${item.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    <i class="fas fa-edit ml-1"></i>تعديل
+                                </button>
+                                <button onclick="deletePortfolioItem('${item.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                                    <i class="fas fa-trash ml-1"></i>حذف
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading admin portfolio:', error);
+            }
+        }
+
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('addImageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const addText = document.getElementById('addImageText');
+                const addLoading = document.getElementById('addImageLoading');
+                
+                addText.classList.add('hidden');
+                addLoading.classList.remove('hidden');
+                
+                const editId = this.dataset.editId;
+                const fileInput = document.getElementById('imageFile');
+                
+                const item = {
+                    title: document.getElementById('imageTitle').value,
+                    category: document.getElementById('imageCategory').value,
+                    description: document.getElementById('imageDescription').value
+                };
+                
+                if (editId) {
+                    // Edit mode
+                    if (fileInput.files[0]) {
+                        item.image_url = await db.uploadImage(fileInput.files[0]);
+                    }
+                    await db.updatePortfolioItem(editId, item);
+                    alert('تم تحديث الصورة بنجاح!');
+                } else {
+                    // Add mode
+                    if (!fileInput.files[0]) {
+                        alert('يرجى اختيار صورة');
+                        return;
+                    }
+                    
+                    item.image_url = await db.uploadImage(fileInput.files[0]);
+                    await db.addPortfolioItem(item);
+                    alert('تم إضافة الصورة بنجاح!');
+                }
+                
+                await loadPortfolio();
+                await loadAdminPortfolio();
+                resetImageForm();
+                
+                addText.classList.remove('hidden');
+                addLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving image:', error);
+                alert('حدث خطأ في حفظ الصورة');
+                
+                document.getElementById('addImageText').classList.remove('hidden');
+                document.getElementById('addImageLoading').classList.add('hidden');
+            }
+        });
+
+        function resetImageForm() {
+            const form = document.getElementById('addImageForm');
+            form.reset();
+            form.removeAttribute('data-edit-id');
+            form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-plus ml-2"></i>إضافة الصورة';
+            document.getElementById('imagePreview').classList.add('hidden');
+        }
+
+        async function deletePortfolioItem(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+                try {
+                    await db.deletePortfolioItem(id);
+                    await loadPortfolio();
+                    await loadAdminPortfolio();
+                } catch (error) {
+                    console.error('Error deleting portfolio item:', error);
+                    alert('حدث خطأ في حذف الصورة');
+                }
+            }
+        }
+
+        async function editPortfolioItem(id) {
+            try {
+                const portfolio = await db.getPortfolio();
+                const item = portfolio.find(p => p.id === id);
+                if (!item) return;
+
+                document.getElementById('imageTitle').value = item.title;
+                document.getElementById('imageCategory').value = item.category;
+                document.getElementById('imageDescription').value = item.description;
+                
+                // Show preview
+                document.getElementById('previewImg').src = item.image_url;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                
+                // Change form to edit mode
+                const form = document.getElementById('addImageForm');
+                form.dataset.editId = id;
+                form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-save ml-2"></i>حفظ التعديلات';
+            } catch (error) {
+                console.error('Error editing portfolio item:', error);
+            }
+        }
+
+        // Admin Services Management
+        async function loadAdminServices() {
+            try {
+                const services = await db.getServices();
+                const list = document.getElementById('adminServicesList');
+                
+                if (services.length === 0) {
+                    list.innerHTML = '<div class="text-center py-8 text-gray-400">لا توجد خدمات متاحة</div>';
+                } else {
+                    list.innerHTML = services.map(service => `
+                        <div class="bg-gray-600 p-4 rounded-lg">
+                            <h4 class="text-white font-bold mb-2">${service.name}</h4>
+                            <p class="text-gray-300 mb-2">${service.description}</p>
+                            <p class="text-brand-red font-bold mb-3">${service.price || 'غير محدد'}</p>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <button onclick="editService('${service.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    <i class="fas fa-edit ml-1"></i>تعديل
+                                </button>
+                                <button onclick="deleteService('${service.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                                    <i class="fas fa-trash ml-1"></i>حذف
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading admin services:', error);
+            }
+        }
+
+        document.getElementById('addServiceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const addText = document.getElementById('addServiceText');
+                const addLoading = document.getElementById('addServiceLoading');
+                
+                addText.classList.add('hidden');
+                addLoading.classList.remove('hidden');
+                
+                const editId = this.dataset.editId;
+                const service = {
+                    name: document.getElementById('serviceName').value,
+                    description: document.getElementById('serviceDescription').value,
+                    price: document.getElementById('servicePrice').value,
+                    category: document.getElementById('serviceCategory').value
+                };
+                
+                if (editId) {
+                    await db.updateService(editId, service);
+                    alert('تم تحديث الخدمة بنجاح!');
+                } else {
+                    await db.addService(service);
+                    alert('تم إضافة الخدمة بنجاح!');
+                }
+                
+                await loadServices();
+                await loadAdminServices();
+                resetServiceForm();
+                
+                addText.classList.remove('hidden');
+                addLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving service:', error);
+                alert('حدث خطأ في حفظ الخدمة');
+                
+                document.getElementById('addServiceText').classList.remove('hidden');
+                document.getElementById('addServiceLoading').classList.add('hidden');
+            }
+        });
+
+        function resetServiceForm() {
+            const form = document.getElementById('addServiceForm');
+            form.reset();
+            form.removeAttribute('data-edit-id');
+            form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-plus ml-2"></i>إضافة الخدمة';
+        }
+
+        async function deleteService(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الخدمة؟')) {
+                try {
+                    await db.deleteService(id);
+                    await loadServices();
+                    await loadAdminServices();
+                } catch (error) {
+                    console.error('Error deleting service:', error);
+                    alert('حدث خطأ في حذف الخدمة');
+                }
+            }
+        }
+
+        async function editService(id) {
+            try {
+                const services = await db.getServices();
+                const service = services.find(s => s.id === id);
+                if (!service) return;
+
+                document.getElementById('serviceName').value = service.name;
+                document.getElementById('serviceDescription').value = service.description;
+                document.getElementById('servicePrice').value = service.price || '';
+                document.getElementById('serviceCategory').value = service.category;
+                
+                // Change form to edit mode
+                const form = document.getElementById('addServiceForm');
+                form.dataset.editId = id;
+                form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-save ml-2"></i>حفظ التعديلات';
+            } catch (error) {
+                console.error('Error editing service:', error);
+            }
+        }
+
+        // Admin Articles Management
+        async function loadAdminArticles() {
+            try {
+                const articles = await db.getArticles();
+                const list = document.getElementById('adminArticlesList');
+                
+                if (articles.length === 0) {
+                    list.innerHTML = '<div class="text-center py-8 text-gray-400">لا توجد مقالات متاحة</div>';
+                } else {
+                    list.innerHTML = articles.map(article => `
+                        <div class="bg-gray-600 p-4 rounded-lg">
+                            <h4 class="text-white font-bold mb-2">${article.title}</h4>
+                            <p class="text-gray-300 mb-3">${article.content.substring(0, 100)}...</p>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <button onclick="editArticle('${article.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    <i class="fas fa-edit ml-1"></i>تعديل
+                                </button>
+                                <button onclick="deleteArticle('${article.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                                    <i class="fas fa-trash ml-1"></i>حذف
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading admin articles:', error);
+            }
+        }
+
+        document.getElementById('addArticleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const addText = document.getElementById('addArticleText');
+                const addLoading = document.getElementById('addArticleLoading');
+                
+                addText.classList.add('hidden');
+                addLoading.classList.remove('hidden');
+                
+                const editId = this.dataset.editId;
+                const article = {
+                    title: document.getElementById('articleTitle').value,
+                    content: document.getElementById('articleContent').value
+                };
+                
+                if (editId) {
+                    await db.updateArticle(editId, article);
+                    alert('تم تحديث المقال بنجاح!');
+                } else {
+                    await db.addArticle(article);
+                    alert('تم إضافة المقال بنجاح!');
+                }
+                
+                await loadArticles();
+                await loadAdminArticles();
+                resetArticleForm();
+                
+                addText.classList.remove('hidden');
+                addLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving article:', error);
+                alert('حدث خطأ في حفظ المقال');
+                
+                document.getElementById('addArticleText').classList.remove('hidden');
+                document.getElementById('addArticleLoading').classList.add('hidden');
+            }
+        });
+
+        function resetArticleForm() {
+            const form = document.getElementById('addArticleForm');
+            form.reset();
+            form.removeAttribute('data-edit-id');
+            form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-plus ml-2"></i>إضافة المقال';
+        }
+
+        async function deleteArticle(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المقال؟')) {
+                try {
+                    await db.deleteArticle(id);
+                    await loadArticles();
+                    await loadAdminArticles();
+                } catch (error) {
+                    console.error('Error deleting article:', error);
+                    alert('حدث خطأ في حذف المقال');
+                }
+            }
+        }
+
+        async function editArticle(id) {
+            try {
+                const articles = await db.getArticles();
+                const article = articles.find(a => a.id === id);
+                if (!article) return;
+
+                document.getElementById('articleTitle').value = article.title;
+                document.getElementById('articleContent').value = article.content;
+                
+                // Change form to edit mode
+                const form = document.getElementById('addArticleForm');
+                form.dataset.editId = id;
+                form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-save ml-2"></i>حفظ التعديلات';
+            } catch (error) {
+                console.error('Error editing article:', error);
+            }
+        }
+
+        // Admin About Management
+        document.getElementById('aboutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const saveText = document.getElementById('aboutSaveText');
+                const saveLoading = document.getElementById('aboutSaveLoading');
+                
+                saveText.classList.add('hidden');
+                saveLoading.classList.remove('hidden');
+                
+                const content = document.getElementById('aboutText').value;
+                await db.updateAbout(content);
+                await loadAbout();
+                alert('تم حفظ السيرة الذاتية بنجاح!');
+                
+                saveText.classList.remove('hidden');
+                saveLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving about:', error);
+                alert('حدث خطأ في حفظ السيرة الذاتية');
+                
+                document.getElementById('aboutSaveText').classList.remove('hidden');
+                document.getElementById('aboutSaveLoading').classList.add('hidden');
+            }
+        });
+
+        // Admin Settings Management
+        async function loadAdminSettings() {
+            try {
+                const settings = await db.getSettings();
+                const about = await db.getAbout();
+                
+                document.getElementById('siteTitle').value = settings.site_title || '';
+                document.getElementById('heroDesc').value = settings.hero_description || '';
+                document.getElementById('phoneNumber').value = settings.phone || '';
+                document.getElementById('facebookLink').value = settings.facebook_link || '';
+                document.getElementById('instagramLink').value = settings.instagram_link || '';
+                document.getElementById('twitterLink').value = settings.twitter_link || '';
+                document.getElementById('aboutText').value = about || '';
+            } catch (error) {
+                console.error('Error loading admin settings:', error);
+            }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const saveText = document.getElementById('settingsSaveText');
+                const saveLoading = document.getElementById('settingsSaveLoading');
+                
+                saveText.classList.add('hidden');
+                saveLoading.classList.remove('hidden');
+                
+                const settings = {
+                    site_title: document.getElementById('siteTitle').value,
+                    hero_description: document.getElementById('heroDesc').value,
+                    phone: document.getElementById('phoneNumber').value,
+                    facebook_link: document.getElementById('facebookLink').value,
+                    instagram_link: document.getElementById('instagramLink').value,
+                    twitter_link: document.getElementById('twitterLink').value
+                };
+                
+                await db.updateSettings(settings);
+                await loadSettings();
+                alert('تم حفظ الإعدادات بنجاح!');
+                
+                saveText.classList.remove('hidden');
+                saveLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('حدث خطأ في حفظ الإعدادات');
+                
+                document.getElementById('settingsSaveText').classList.remove('hidden');
+                document.getElementById('settingsSaveLoading').classList.add('hidden');
+            }
+        });
+
+        // Admin Messages Management
+        async function loadAdminMessages() {
+            try {
+                const messages = await db.getMessages();
+                const list = document.getElementById('messagesList');
+                
+                if (messages.length === 0) {
+                    list.innerHTML = '<p class="text-gray-400">لا توجد رسائل جديدة</p>';
+                } else {
+                    list.innerHTML = messages.map(message => `
+                        <div class="bg-gray-600 p-4 rounded-lg">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="text-white font-bold">${message.name}</h4>
+                                <button onclick="deleteMessage('${message.id}')" class="text-red-400 hover:text-red-300">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-300 mb-2">البريد: ${message.email}</p>
+                            <p class="text-gray-300 mb-2">الهاتف: ${message.phone}</p>
+                            <p class="text-gray-200 mb-3">${message.message}</p>
+                            <p class="text-gray-400 text-sm">${new Date(message.created_at).toLocaleString('ar-SA')}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading admin messages:', error);
+            }
+        }
+
+        async function deleteMessage(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الرسالة؟')) {
+                try {
+                    await db.deleteMessage(id);
+                    await loadAdminMessages();
+                } catch (error) {
+                    console.error('Error deleting message:', error);
+                    alert('حدث خطأ في حذف الرسالة');
+                }
+            }
+        }
+
+        // Account Management
+        document.getElementById('accountForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const saveText = document.getElementById('accountSaveText');
+                const saveLoading = document.getElementById('accountSaveLoading');
+                
+                saveText.classList.add('hidden');
+                saveLoading.classList.remove('hidden');
+                
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newUsername = document.getElementById('newUsername').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                const admin = await db.getAdmin();
+                
+                if (currentPassword !== admin.password) {
+                    alert('كلمة المرور الحالية غير صحيحة');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    alert('كلمة المرور الجديدة غير متطابقة');
+                    return;
+                }
+                
+                if (!newUsername || !newPassword) {
+                    alert('يرجى ملء جميع الحقول');
+                    return;
+                }
+                
+                await db.updateAdmin(newUsername, newPassword);
+                alert('تم تحديث بيانات الحساب بنجاح!');
+                this.reset();
+                
+                saveText.classList.remove('hidden');
+                saveLoading.classList.add('hidden');
+            } catch (error) {
+                console.error('Error updating account:', error);
+                alert('حدث خطأ في تحديث الحساب');
+                
+                document.getElementById('accountSaveText').classList.remove('hidden');
+                document.getElementById('accountSaveLoading').classList.add('hidden');
+            }
+        });
+
+        // Load admin account data
+        async function loadAdminAccount() {
+            try {
+                const admin = await db.getAdmin();
+                document.getElementById('newUsername').value = admin.username || '';
+            } catch (error) {
+                console.error('Error loading admin account:', error);
+            }
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.add('hidden');
+            }
+        });
+
+        // Hide Supabase notice
+        function hideSupabaseNotice() {
+            document.getElementById('supabaseNotice').style.display = 'none';
+        }
+
+        // Auto-hide Supabase notice after 8 seconds
+        setTimeout(() => {
+            const notice = document.getElementById('supabaseNotice');
+            if (notice && db.isSupabaseReady) {
+                notice.style.display = 'none';
+            }
+        }, 8000);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9767fcb98608f9db',t:'MTc1NjQyNzkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
