@@ -1432,61 +1432,7 @@ class SecurityManager {
 
 // تفعيل نظام الحماية
 const security = new SecurityManager();
-وأيضاً غيّر كود تسجيل الدخول:
-// ابحث عن "document.getElementById('adminLoginForm').addEventListener" وغيّره بهذا:
 
-document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    // فحص الحظر
-    if (security.checkLockout()) {
-        return;
-    }
-    
-    try {
-        const loginText = document.getElementById('loginText');
-        const loginLoading = document.getElementById('loginLoading');
-        
-        loginText.classList.add('hidden');
-        loginLoading.classList.remove('hidden');
-        
-        const username = document.getElementById('adminUsername').value;
-        const password = document.getElementById('adminPassword').value;
-        
-        if (!username || !password) {
-            alert('يرجى إدخال اسم المستخدم وكلمة المرور');
-            loginText.classList.remove('hidden');
-            loginLoading.classList.add('hidden');
-            return;
-        }
-        
-        const isValid = await db.checkAdmin(username, password);
-        
-        if (isValid) {
-            security.recordSuccessfulLogin();
-            isAdminLoggedIn = true;
-            hideAdminLogin();
-            showAdminPanel();
-            await loadAdminContent();
-            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
-        } else {
-            security.recordFailedLogin();
-            const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
-            if (remainingAttempts > 0) {
-                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
-            }
-        }
-        
-        loginText.classList.remove('hidden');
-        loginLoading.classList.add('hidden');
-    } catch (error) {
-        console.error('Error during login:', error);
-        alert('حدث خطأ أثناء تسجيل الدخول');
-        
-        document.getElementById('loginText').classList.remove('hidden');
-        document.getElementById('loginLoading').classList.add('hidden');
-    }
-});
         // Initialize database
         const db = new SupabaseDB();
         
@@ -1761,7 +1707,57 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
         }
 
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    e.preventDefault();
+            
+    // فحص الحظر
+    if (security.checkLockout()) {
+        return;
+    }
+    
+    try {
+        const loginText = document.getElementById('loginText');
+        const loginLoading = document.getElementById('loginLoading');
+        
+        loginText.classList.add('hidden');
+        loginLoading.classList.remove('hidden');
+        
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+        
+        if (!username || !password) {
+            alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+            loginText.classList.remove('hidden');
+            loginLoading.classList.add('hidden');
+            return;
+        }
+        
+        const isValid = await db.checkAdmin(username, password);
+        
+        if (isValid) {
+            security.recordSuccessfulLogin();
+            isAdminLoggedIn = true;
+            hideAdminLogin();
+            showAdminPanel();
+            await loadAdminContent();
+            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
+        } else {
+            security.recordFailedLogin();
+            const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
+            if (remainingAttempts > 0) {
+                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
+            }
+        }
+        
+        loginText.classList.remove('hidden');
+        loginLoading.classList.add('hidden');
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('حدث خطأ أثناء تسجيل الدخول');
+        
+        document.getElementById('loginText').classList.remove('hidden');
+        document.getElementById('loginLoading').classList.add('hidden');
+    }
+});
             
             try {
                 const loginText = document.getElementById('loginText');
