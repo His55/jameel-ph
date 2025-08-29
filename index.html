@@ -10,8 +10,8 @@
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase Configuration (استبدل بإعداداتك)
-        const SUPABASE_URL =' https://uspxswigpccxmgujpdpg.supabase.co';
+        // Supabase Configuration (إعداداتك الصحيحة)
+        const SUPABASE_URL = 'https://uspxswigpccxmgujpdpg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY';
         
         // Initialize Supabase
@@ -488,14 +488,14 @@
         </div>
     </div>
 
-    <!-- Supabase Configuration Notice -->
-    <div id="supabaseNotice" class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg max-w-sm">
+    <!-- Success Notice -->
+    <div id="successNotice" class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg max-w-sm hidden">
         <div class="flex items-start">
-            <i class="fas fa-database text-xl ml-3 mt-1"></i>
+            <i class="fas fa-check-circle text-xl ml-3 mt-1"></i>
             <div>
-                <h4 class="font-bold mb-2">🎉 قاعدة بيانات مشتركة جاهزة!</h4>
-                <p class="text-sm mb-3">الموقع يستخدم Supabase كقاعدة بيانات مشتركة. جميع التحديثات ستظهر لكل الزوار فوراً!</p>
-                <button onclick="hideSupabaseNotice()" class="bg-white text-green-500 px-3 py-1 rounded text-sm">رائع!</button>
+                <h4 class="font-bold mb-2">🎉 قاعدة البيانات متصلة!</h4>
+                <p class="text-sm mb-3">جميع التعديلات ستظهر لكل الزوار فوراً!</p>
+                <button onclick="hideSuccessNotice()" class="bg-white text-green-500 px-3 py-1 rounded text-sm">رائع!</button>
             </div>
         </div>
     </div>
@@ -512,15 +512,24 @@
                 try {
                     // Check if Supabase is properly configured
                     if (window.supabase && SUPABASE_URL !== 'https://your-project.supabase.co') {
-                        this.isSupabaseReady = true;
-                        console.log('Supabase initialized successfully');
-                        await this.initializeDefaultData();
+                        // Test connection
+                        const { data, error } = await window.supabase
+                            .from('portfolio')
+                            .select('count', { count: 'exact', head: true });
+                        
+                        if (!error) {
+                            this.isSupabaseReady = true;
+                            console.log('✅ Supabase connected successfully!');
+                            document.getElementById('successNotice').classList.remove('hidden');
+                            await this.initializeDefaultData();
+                        } else {
+                            throw error;
+                        }
                     } else {
-                        console.warn('Supabase not properly configured, using demo mode');
-                        this.initializeDemoMode();
+                        throw new Error('Supabase not configured');
                     }
                 } catch (error) {
-                    console.error('Supabase initialization error:', error);
+                    console.warn('⚠️ Supabase connection failed, using demo mode:', error);
                     this.initializeDemoMode();
                 }
             }
@@ -669,9 +678,9 @@
                         password: "123456"
                     });
 
-                    console.log('Default data created successfully');
+                    console.log('✅ Default data created successfully');
                 } catch (error) {
-                    console.error('Error creating default data:', error);
+                    console.error('❌ Error creating default data:', error);
                 }
             }
 
@@ -952,8 +961,7 @@
                     const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
                     return data.about || '';
                 }
-
-                try {
+                                      try {
                     const { data, error } = await window.supabase
                         .from('about')
                         .select('content')
@@ -1007,7 +1015,7 @@
                     return data.settings || {};
                 }
 
-                               try {
+                try {
                     const { data, error } = await window.supabase
                         .from('settings')
                         .select('*')
@@ -1269,7 +1277,7 @@
                 await loadAbout();
                 await loadArticles();
                 await loadSettings();
-            }, 1000);
+            }, 2000);
         });
 
         // Navigation functions
@@ -1652,6 +1660,8 @@
                     // Add mode
                     if (!fileInput.files[0]) {
                         alert('يرجى اختيار صورة');
+                        addText.classList.remove('hidden');
+                        addLoading.classList.add('hidden');
                         return;
                     }
                     
@@ -1681,6 +1691,7 @@
             form.removeAttribute('data-edit-id');
             form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-plus ml-2"></i>إضافة الصورة';
             document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('imageFile').required = true;
         }
 
         async function deletePortfolioItem(id) {
@@ -1689,6 +1700,7 @@
                     await db.deletePortfolioItem(id);
                     await loadPortfolio();
                     await loadAdminPortfolio();
+                    alert('تم حذف الصورة بنجاح!');
                 } catch (error) {
                     console.error('Error deleting portfolio item:', error);
                     alert('حدث خطأ في حذف الصورة');
@@ -1699,7 +1711,7 @@
         async function editPortfolioItem(id) {
             try {
                 const portfolio = await db.getPortfolio();
-                const item = portfolio.find(p => p.id === id);
+                const item = portfolio.find(p => p.id == id);
                 if (!item) return;
 
                 document.getElementById('imageTitle').value = item.title;
@@ -1714,6 +1726,7 @@
                 const form = document.getElementById('addImageForm');
                 form.dataset.editId = id;
                 form.querySelector('button[type="submit"] span').innerHTML = '<i class="fas fa-save ml-2"></i>حفظ التعديلات';
+                document.getElementById('imageFile').required = false;
             } catch (error) {
                 console.error('Error editing portfolio item:', error);
             }
@@ -1803,6 +1816,7 @@
                     await db.deleteService(id);
                     await loadServices();
                     await loadAdminServices();
+                    alert('تم حذف الخدمة بنجاح!');
                 } catch (error) {
                     console.error('Error deleting service:', error);
                     alert('حدث خطأ في حذف الخدمة');
@@ -1813,7 +1827,7 @@
         async function editService(id) {
             try {
                 const services = await db.getServices();
-                const service = services.find(s => s.id === id);
+                const service = services.find(s => s.id == id);
                 if (!service) return;
 
                 document.getElementById('serviceName').value = service.name;
@@ -1911,6 +1925,7 @@
                     await db.deleteArticle(id);
                     await loadArticles();
                     await loadAdminArticles();
+                    alert('تم حذف المقال بنجاح!');
                 } catch (error) {
                     console.error('Error deleting article:', error);
                     alert('حدث خطأ في حذف المقال');
@@ -1921,7 +1936,7 @@
         async function editArticle(id) {
             try {
                 const articles = await db.getArticles();
-                const article = articles.find(a => a.id === id);
+                const article = articles.find(a => a.id == id);
                 if (!article) return;
 
                 document.getElementById('articleTitle').value = article.title;
@@ -2049,6 +2064,7 @@
                 try {
                     await db.deleteMessage(id);
                     await loadAdminMessages();
+                    alert('تم حذف الرسالة بنجاح!');
                 } catch (error) {
                     console.error('Error deleting message:', error);
                     alert('حدث خطأ في حذف الرسالة');
@@ -2076,16 +2092,22 @@
                 
                 if (currentPassword !== admin.password) {
                     alert('كلمة المرور الحالية غير صحيحة');
+                    saveText.classList.remove('hidden');
+                    saveLoading.classList.add('hidden');
                     return;
                 }
                 
-                if (newPassword !== confirmPassword) {
+                                if (newPassword !== confirmPassword) {
                     alert('كلمة المرور الجديدة غير متطابقة');
+                    saveText.classList.remove('hidden');
+                    saveLoading.classList.add('hidden');
                     return;
                 }
                 
                 if (!newUsername || !newPassword) {
                     alert('يرجى ملء جميع الحقول');
+                    saveText.classList.remove('hidden');
+                    saveLoading.classList.add('hidden');
                     return;
                 }
                 
@@ -2135,18 +2157,21 @@
             }
         });
 
-        // Hide Supabase notice
-        function hideSupabaseNotice() {
-            document.getElementById('supabaseNotice').style.display = 'none';
+        // Hide success notice
+        function hideSuccessNotice() {
+            document.getElementById('successNotice').style.display = 'none';
         }
 
-        // Auto-hide Supabase notice after 8 seconds
+        // Auto-hide success notice after 8 seconds
         setTimeout(() => {
-            const notice = document.getElementById('supabaseNotice');
+            const notice = document.getElementById('successNotice');
             if (notice && db.isSupabaseReady) {
                 notice.style.display = 'none';
             }
         }, 8000);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9767fcb98608f9db',t:'MTc1NjQyNzkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976885e4c671f9db',t:'MTc1NjQzMzU0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+                
+
+       
