@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
-
- 
-<title>جميل غانم للتصوير الفوتوغرافي | jameel-ph</title>
+    <title>جميل غانم للتصوير الفوتوغرافي | jameel-ph</title>
 
 <!-- SEO Meta Tags -->
 <meta name="description" content="جميل غانم متخصص في التصوير الاحترافي للفعاليات والمنتجات.">
@@ -179,9 +176,7 @@
                     مرحباً بكم في عالم <span class="text-brand-red">التصوير الاحترافي</span>
                 </h2>
                 <p class="text-xl mb-8 text-gray-300" id="heroDescription">
-                   
-                أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات
-                    الموقع تحت الصيانه يتم تحديثه للامان
+                    أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات
                 </p>
                 <div class="flex justify-center space-x-4 space-x-reverse">
                     <a href="https://wa.me/967771145933" class="bg-brand-red px-8 py-3 rounded-lg hover:bg-red-700 transition-colors">
@@ -324,7 +319,7 @@
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8">
         <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2025 | جميع الحقوق محفوظة هشام الفقية 774426179</p>
+            <p>&copy; 2024 جميل غانم - جميع الحقوق محفوظة</p>
         </div>
     </footer>
 
@@ -1296,146 +1291,9 @@
                 }
             }
         }
-// 🔒 نظام الحماية المتقدم لموقع جميل غانم
-class SecurityManager {
-    constructor() {
-        this.maxLoginAttempts = 3;
-        this.lockoutDuration = 15 * 60 * 1000; // 15 دقيقة
-        this.sessionTimeout = 30 * 60 * 1000; // 30 دقيقة
-        this.loginAttempts = this.getLoginAttempts();
-        this.lastActivity = Date.now();
-        this.initSecurity();
-    }
-
-    initSecurity() {
-        this.checkLockout();
-        this.setupSessionTimeout();
-        this.monitorActivity();
-        console.log('🛡️ نظام الحماية نشط - موقع جميل غانم محمي');
-    }
-
-    getLoginAttempts() {
-        const attempts = localStorage.getItem('jameel_admin_attempts');
-        return attempts ? JSON.parse(attempts) : { count: 0, timestamp: 0 };
-    }
-
-    saveLoginAttempts(attempts) {
-        localStorage.setItem('jameel_admin_attempts', JSON.stringify(attempts));
-    }
-
-    isLockedOut() {
-        const now = Date.now();
-        if (this.loginAttempts.count >= this.maxLoginAttempts) {
-            const timeSinceLockout = now - this.loginAttempts.timestamp;
-            return timeSinceLockout < this.lockoutDuration;
-        }
-        return false;
-    }
-
-    getRemainingLockoutTime() {
-        const now = Date.now();
-        const timeSinceLockout = now - this.loginAttempts.timestamp;
-        const remaining = this.lockoutDuration - timeSinceLockout;
-        return Math.max(0, Math.ceil(remaining / 1000 / 60));
-    }
-
-    checkLockout() {
-        if (this.isLockedOut()) {
-            const remaining = this.getRemainingLockoutTime();
-            if (remaining > 0) {
-                this.showLockoutMessage(remaining);
-                return true;
-            } else {
-                this.resetLoginAttempts();
-            }
-        }
-        return false;
-    }
-
-    recordFailedLogin() {
-        this.loginAttempts.count++;
-        this.loginAttempts.timestamp = Date.now();
-        this.saveLoginAttempts(this.loginAttempts);
-        this.logSecurityEvent('محاولة دخول فاشلة', {
-            attempts: this.loginAttempts.count,
-            timestamp: new Date().toLocaleString('ar-SA')
-        });
-    }
-
-    recordSuccessfulLogin() {
-        this.resetLoginAttempts();
-        this.lastActivity = Date.now();
-        this.logSecurityEvent('دخول ناجح للمدير', {
-            timestamp: new Date().toLocaleString('ar-SA')
-        });
-    }
-
-    resetLoginAttempts() {
-        this.loginAttempts = { count: 0, timestamp: 0 };
-        this.saveLoginAttempts(this.loginAttempts);
-    }
-
-    setupSessionTimeout() {
-        setInterval(() => {
-            if (isAdminLoggedIn) {
-                const timeSinceActivity = Date.now() - this.lastActivity;
-                if (timeSinceActivity > this.sessionTimeout) {
-                    this.forceLogout('انتهاء مهلة الجلسة');
-                }
-            }
-        }, 60000);
-    }
-
-    monitorActivity() {
-        ['click', 'keypress', 'mousemove', 'scroll'].forEach(event => {
-            document.addEventListener(event, () => {
-                if (isAdminLoggedIn) {
-                    this.lastActivity = Date.now();
-                }
-            });
-        });
-    }
-
-    forceLogout(reason) {
-        isAdminLoggedIn = false;
-        hideAdminPanel();
-        this.logSecurityEvent('خروج إجباري', {
-            reason: reason,
-            timestamp: new Date().toLocaleString('ar-SA')
-        });
-        alert('🔒 تم تسجيل الخروج تلقائياً: ' + reason);
-    }
-
-    showLockoutMessage(minutes) {
-        alert(`🚫 تم حظر تسجيل الدخول مؤقتاً!\n\nتم تجاوز الحد المسموح من المحاولات.\nالمحاولة مرة أخرى بعد ${minutes} دقيقة.\n\n⚠️ حماية موقع جميل غانم نشطة.`);
-        hideAdminLogin();
-    }
-
-    logSecurityEvent(event, data) {
-        const logs = JSON.parse(localStorage.getItem('jameel_security_logs') || '[]');
-        logs.push({
-            id: Date.now(),
-            event: event,
-            data: data,
-            timestamp: Date.now()
-        });
-        if (logs.length > 50) {
-            logs.splice(0, logs.length - 50);
-        }
-        localStorage.setItem('jameel_security_logs', JSON.stringify(logs));
-    }
-
-    getSecurityLogs() {
-        return JSON.parse(localStorage.getItem('jameel_security_logs') || '[]');
-    }
-}
-
-// تفعيل نظام الحماية
-const security = new SecurityManager();
 
         // Initialize database
         const db = new SupabaseDB();
-        
         let isAdminLoggedIn = false;
 
         // Utility functions
@@ -1707,57 +1565,7 @@ const security = new SecurityManager();
         }
 
         document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-            
-    // فحص الحظر
-    if (security.checkLockout()) {
-        return;
-    }
-    
-    try {
-        const loginText = document.getElementById('loginText');
-        const loginLoading = document.getElementById('loginLoading');
-        
-        loginText.classList.add('hidden');
-        loginLoading.classList.remove('hidden');
-        
-        const username = document.getElementById('adminUsername').value;
-        const password = document.getElementById('adminPassword').value;
-        
-        if (!username || !password) {
-            alert('يرجى إدخال اسم المستخدم وكلمة المرور');
-            loginText.classList.remove('hidden');
-            loginLoading.classList.add('hidden');
-            return;
-        }
-        
-        const isValid = await db.checkAdmin(username, password);
-        
-        if (isValid) {
-            security.recordSuccessfulLogin();
-            isAdminLoggedIn = true;
-            hideAdminLogin();
-            showAdminPanel();
-            await loadAdminContent();
-            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
-        } else {
-            security.recordFailedLogin();
-            const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
-            if (remainingAttempts > 0) {
-                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
-            }
-        }
-        
-        loginText.classList.remove('hidden');
-        loginLoading.classList.add('hidden');
-    } catch (error) {
-        console.error('Error during login:', error);
-        alert('حدث خطأ أثناء تسجيل الدخول');
-        
-        document.getElementById('loginText').classList.remove('hidden');
-        document.getElementById('loginLoading').classList.add('hidden');
-    }
-});
+            e.preventDefault();
             
             try {
                 const loginText = document.getElementById('loginText');
@@ -2407,7 +2215,7 @@ const security = new SecurityManager();
         setTimeout(() => {
             const notice = document.getElementById('successNotice');
             if (notice && db.isSupabaseReady) {
-                notice.style.display = 'none';
+                notice.style.display = 'none';	
             }
         }, 8000);
     </script>
