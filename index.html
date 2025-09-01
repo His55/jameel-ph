@@ -777,22 +777,22 @@ const security = new SecurityManager();
             menu.classList.toggle('hidden');
         }
 
-        // Gallery functions (معرض الصور)
+        // Portfolio functions (معرض الصور)
         async function loadPortfolio() {
             try {
                 showLoading('portfolioLoading');
                 hideContent('portfolioGrid');
-                // جلب الصور من جدول gallery
-                const { data: gallery, error } = await window.supabase
-                    .from('gallery')
+                // جلب الصور من جدول portfolio
+                const { data: portfolio, error } = await window.supabase
+                    .from('portfolio')
                     .select('*')
                     .order('created_at', { ascending: false });
                 const grid = document.getElementById('portfolioGrid');
                 if (error) throw error;
-                if (!gallery || gallery.length === 0) {
+                if (!portfolio || portfolio.length === 0) {
                     grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
                 } else {
-                    grid.innerHTML = gallery.map(item => `
+                    grid.innerHTML = portfolio.map(item => `
                         <div class="gallery-item portfolio-item" data-category="${item.category}">
                             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                                 <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
@@ -807,7 +807,7 @@ const security = new SecurityManager();
                 hideLoading('portfolioLoading');
                 showContent('portfolioGrid');
             } catch (error) {
-                console.error('Error loading gallery:', error);
+                console.error('Error loading portfolio:', error);
                 hideLoading('portfolioLoading');
                 showContent('portfolioGrid');
                 document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
@@ -1087,19 +1087,19 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
             await loadAdminAccount();
         }
 
-        // Admin Gallery Management
+        // Admin Portfolio Management
         async function loadAdminPortfolio() {
             try {
-                const { data: gallery, error } = await window.supabase
-                    .from('gallery')
+                const { data: portfolio, error } = await window.supabase
+                    .from('portfolio')
                     .select('*')
                     .order('created_at', { ascending: false });
                 const list = document.getElementById('adminPortfolioList');
                 if (error) throw error;
-                if (!gallery || gallery.length === 0) {
+                if (!portfolio || portfolio.length === 0) {
                     list.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400">لا توجد صور في المعرض</div>';
                 } else {
-                    list.innerHTML = gallery.map(item => `
+                    list.innerHTML = portfolio.map(item => `
                         <div class="bg-gray-600 p-4 rounded-lg">
                             <img src="${item.image_url}" alt="${item.title}" class="w-full h-32 object-cover rounded mb-3">
                             <h4 class="text-white font-bold mb-2">${item.title}</h4>
@@ -1116,7 +1116,7 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
                     `).join('');
                 }
             } catch (error) {
-                console.error('Error loading admin gallery:', error);
+                console.error('Error loading admin portfolio:', error);
             }
         }
 
