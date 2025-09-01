@@ -140,6 +140,18 @@
                 <div class="flex items-center space-x-4 space-x-reverse">
                     <h1 class="text-2xl font-bold text-brand-red">جميل غانم</h1>
                     <span class="text-gray-300">مصور فوتوغرافي</span>
+                    <script>
+                    // إظهار لوحة الإدارة عند الضغط على اسم جميل غانم
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelector('.text-brand-red').style.cursor = 'pointer';
+                        document.querySelector('.text-brand-red').onclick = function() {
+                            showAdminLogin();
+                        };
+                        // إخفاء زر إدارة الموقع من الهيدر
+                        let adminBtn = document.querySelector('button[onclick="showAdminLogin()"]');
+                        if(adminBtn) adminBtn.style.display = 'none';
+                    });
+                    </script>
                 </div>
                 <div class="hidden md:flex space-x-6 space-x-reverse">
                     <a href="#home" class="hover:text-brand-red transition-colors">الرئيسية</a>
@@ -339,19 +351,6 @@
                         <button type="button" onclick="hideAdminLogin()" class="flex-1 bg-gray-300 text-black py-3 rounded hover:bg-gray-400">إلغاء</button>
                     </div>
                 </form>
-<!-- مودال استعادة كلمة المرور -->
-<div id="resetPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full">
-            <h3 class="text-2xl font-bold mb-6 text-center text-black">استعادة كلمة المرور</h3>
-            <form id="resetPasswordForm">
-                <input type="email" id="resetEmail" placeholder="البريد الإلكتروني" class="w-full p-3 mb-6 border rounded" required>
-                <button type="submit" class="w-full bg-brand-red text-white py-3 rounded hover:bg-red-700">إرسال رابط الاستعادة</button>
-                <button type="button" onclick="hideResetPasswordModal()" class="w-full mt-2 bg-gray-300 text-black py-3 rounded hover:bg-gray-400">إلغاء</button>
-            </form>
-        </div>
-    </div>
-</div>
             </div>
         </div>
     </div>
@@ -563,38 +562,747 @@
     </div>
 
     <script>
-                // Supabase Auth تسجيل الدخول واستعادة كلمة المرور
-                async function supabaseLogin(email, password) {
-                    try {
-                        const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
-                        if (error) return false;
-                        return true;
-                    } catch (error) {
-                        return false;
+        // Supabase Database Manager
+        class SupabaseDB {
+            constructor() {
+                this.isSupabaseReady = false;
+                this.initializeSupabase();
+            }
+
+            async initializeSupabase() {
+                try {
+                    // Check if Supabase is properly configured
+                    if (window.supabase && SUPABASE_URL !== 'https://your-project.supabase.co') {
+                        // Test connection
+                        const { data, error } = await window.supabase
+                            .from('portfolio')
+                            .select('count', { count: 'exact', head: true });
+                        
+                        if (!error) {
+                            this.isSupabaseReady = true;
+                            console.log('✅ Supabase connected successfully!');
+                            document.getElementById('successNotice').classList.remove('hidden');
+                            await this.initializeDefaultData();
+                        } else {
+                            throw error;
+                        }
+                    } else {
+                        throw new Error('Supabase not configured');
                     }
+                } catch (error) {
+                    console.warn('⚠️ Supabase connection failed, using demo mode:', error);
+                    this.initializeDemoMode();
+                }
+            }
+
+            initializeDemoMode() {
+                // Fallback to localStorage for demo purposes
+                this.isSupabaseReady = false;
+                if (!localStorage.getItem('photographerDB')) {
+                    const demoData = {
+                        portfolio: [
+                            {
+                                id: '1',
+                                title: "حفل زفاف رائع",
+                                category: "wedding",
+                                description: "لحظات جميلة من حفل زفاف مميز",
+                                image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Ysdin2YXZhCDYstmB2KfZgTwvdGV4dD48L3N2Zz4=",
+                                created_at: new Date().toISOString()
+                            },
+                            {
+                                id: '2',
+                                title: "جلسة تصوير شخصية",
+                                category: "portrait",
+                                description: "جلسة تصوير احترافية للبورتريه",
+                                image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2VkZjJmNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7YrNmE2LPYqSDYqti12YjZitixPC90ZXh0Pjwvc3ZnPg==",
+                                created_at: new Date().toISOString()
+                            }
+                        ],
+                        services: [
+                            {
+                                id: '1',
+                                name: "تصوير حفلات الزفاف",
+                                description: "تصوير احترافي لحفلات الزفاف مع تغطية شاملة لجميع اللحظات المميزة",
+                                price: "حسب الباقة",
+                                category: "photography"
+                            },
+                            {
+                                id: '2',
+                                name: "جلسات التصوير الشخصية",
+                                description: "جلسات تصوير احترافية للأفراد والعائلات في استوديو أو خارجي",
+                                price: "200 ريال",
+                                category: "photography"
+                            }
+                        ],
+                        articles: [
+                            {
+                                id: '1',
+                                title: "نصائح للحصول على أفضل صور الزفاف",
+                                content: "في هذا المقال سأشارككم أهم النصائح للحصول على صور زفاف مثالية. أولاً، التخطيط المسبق مهم جداً...",
+                                created_at: new Date().toISOString()
+                            }
+                        ],
+                        about: "مصور فوتوغرافي محترف بخبرة تزيد عن 10 سنوات في مجال التصوير. متخصص في تصوير حفلات الزفاف والمناسبات الخاصة والجلسات الشخصية. أسعى دائماً لتقديم أفضل جودة وخدمة لعملائي.",
+                        settings: {
+                            site_title: "جميل غانم - مصور فوتوغرافي",
+                            hero_description: "أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات",
+                            phone: "771145933",
+                            facebook_link: "",
+                            instagram_link: "",
+                            twitter_link: ""
+                        },
+                        messages: [],
+                        admin: {
+                            username: "admin",
+                            password: "123456"
+                        }
+                    };
+                    localStorage.setItem('photographerDB', JSON.stringify(demoData));
+                }
+            }
+
+            async initializeDefaultData() {
+                if (!this.isSupabaseReady) return;
+
+                try {
+                    // Check if data already exists
+                    const { data: portfolio } = await window.supabase
+                        .from('portfolio')
+                        .select('*')
+                        .limit(1);
+                    
+                    if (!portfolio || portfolio.length === 0) {
+                        // Initialize with default data
+                        await this.createDefaultData();
+                    }
+                } catch (error) {
+                    console.error('Error initializing default data:', error);
+                }
+            }
+
+            async createDefaultData() {
+                try {
+                    // Default portfolio items
+                    const defaultPortfolio = [
+                        {
+                            title: "حفل زفاف رائع",
+                            category: "wedding",
+                            description: "لحظات جميلة من حفل زفاف مميز",
+                            image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y3ZmFmYyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Ysdin2YXZhCDYstmB2KfZgTwvdGV4dD48L3N2Zz4="
+                        },
+                        {
+                            title: "جلسة تصوير شخصية",
+                            category: "portrait",
+                            description: "جلسة تصوير احترافية للبورتريه",
+                            image_url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2VkZjJmNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM0YTVjNmEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7YrNmE2LPYqSDYqti12YjZitixPC90ZXh0Pjwvc3ZnPg=="
+                        }
+                    ];
+
+                    // Default services
+                    const defaultServices = [
+                        {
+                            name: "تصوير حفلات الزفاف",
+                            description: "تصوير احترافي لحفلات الزفاف مع تغطية شاملة لجميع اللحظات المميزة",
+                            price: "حسب الباقة",
+                            category: "photography"
+                        },
+                        {
+                            name: "جلسات التصوير الشخصية",
+                            description: "جلسات تصوير احترافية للأفراد والعائلات في استوديو أو خارجي",
+                            price: "200 ريال",
+                            category: "photography"
+                        }
+                    ];
+
+                    // Add default data
+                    await window.supabase.from('portfolio').insert(defaultPortfolio);
+                    await window.supabase.from('services').insert(defaultServices);
+
+                    // Add default settings
+                    await window.supabase.from('settings').insert({
+                        site_title: "جميل غانم - مصور فوتوغرافي",
+                        hero_description: "أسعى لتخليد لحظاتكم الثمينة بأجمل الصور وأروع الذكريات",
+                        phone: "771145933",
+                        facebook_link: "",
+                        instagram_link: "",
+                        twitter_link: ""
+                    });
+
+                    // Add default about
+                    await window.supabase.from('about').insert({
+                        content: "مصور فوتوغرافي محترف بخبرة تزيد عن 10 سنوات في مجال التصوير. متخصص في تصوير حفلات الزفاف والمناسبات الخاصة."
+                    });
+
+                    // Add default admin
+                    await window.supabase.from('admin').insert({
+                        username: "admin",
+                        password: "123456"
+                    });
+
+                    console.log('✅ Default data created successfully');
+                } catch (error) {
+                    console.error('❌ Error creating default data:', error);
+                }
+            }
+
+            // Portfolio methods
+            async getPortfolio() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.portfolio || [];
                 }
 
-                function showResetPasswordModal() {
-                    document.getElementById('resetPasswordModal').classList.remove('hidden');
+                try {
+                    const { data, error } = await window.supabase
+                        .from('portfolio')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting portfolio:', error);
+                    return [];
                 }
-                function hideResetPasswordModal() {
-                    document.getElementById('resetPasswordModal').classList.add('hidden');
+            }
+
+            async addPortfolioItem(item) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    item.id = Date.now().toString();
+                    item.created_at = new Date().toISOString();
+                    data.portfolio = data.portfolio || [];
+                    data.portfolio.push(item);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return item;
                 }
-                document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const email = document.getElementById('resetEmail').value;
-                    if (!email) return alert('يرجى إدخال البريد الإلكتروني');
-                    try {
-                        const { error } = await window.supabase.auth.resetPasswordForEmail(email, {
-                            redirectTo: window.location.href
-                        });
-                        if (error) throw error;
-                        alert('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.');
-                        hideResetPasswordModal();
-                    } catch (err) {
-                        alert('حدث خطأ: ' + err.message);
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('portfolio')
+                        .insert([item])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            async updatePortfolioItem(id, updatedItem) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.portfolio.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.portfolio[index] = { ...data.portfolio[index], ...updatedItem };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
                     }
-                });
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('portfolio')
+                        .update(updatedItem)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            async deletePortfolioItem(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.portfolio = data.portfolio.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('portfolio')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting portfolio item:', error);
+                    throw error;
+                }
+            }
+
+            // Services methods
+            async getServices() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.services || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('services')
+                        .select('*');
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting services:', error);
+                    return [];
+                }
+            }
+
+            async addService(service) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    service.id = Date.now().toString();
+                    data.services = data.services || [];
+                    data.services.push(service);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return service;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('services')
+                        .insert([service])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding service:', error);
+                    throw error;
+                }
+            }
+
+            async updateService(id, updatedService) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.services.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.services[index] = { ...data.services[index], ...updatedService };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
+                    }
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('services')
+                        .update(updatedService)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating service:', error);
+                    throw error;
+                }
+            }
+
+            async deleteService(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.services = data.services.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('services')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting service:', error);
+                    throw error;
+                }
+            }
+
+            // Articles methods
+            async getArticles() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.articles || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('articles')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting articles:', error);
+                    return [];
+                }
+            }
+
+            async addArticle(article) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    article.id = Date.now().toString();
+                    article.created_at = new Date().toISOString();
+                    data.articles = data.articles || [];
+                    data.articles.push(article);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return article;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('articles')
+                        .insert([article])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding article:', error);
+                    throw error;
+                }
+            }
+
+            async updateArticle(id, updatedArticle) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const index = data.articles.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        data.articles[index] = { ...data.articles[index], ...updatedArticle };
+                        localStorage.setItem('photographerDB', JSON.stringify(data));
+                    }
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('articles')
+                        .update(updatedArticle)
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error updating article:', error);
+                    throw error;
+                }
+            }
+
+            async deleteArticle(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.articles = data.articles.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('articles')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting article:', error);
+                    throw error;
+                }
+            }
+
+            // About methods
+            async getAbout() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.about || '';
+                }
+                                      try {
+                    const { data, error } = await window.supabase
+                        .from('about')
+                        .select('content')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0].content : '';
+                } catch (error) {
+                    console.error('Error getting about:', error);
+                    return '';
+                }
+            }
+
+            async updateAbout(content) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.about = content;
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('about')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('about')
+                            .update({ content })
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('about')
+                            .insert([{ content }]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating about:', error);
+                    throw error;
+                }
+            }
+
+            // Settings methods
+            async getSettings() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.settings || {};
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('settings')
+                        .select('*')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0] : {};
+                } catch (error) {
+                    console.error('Error getting settings:', error);
+                    return {};
+                }
+            }
+
+            async updateSettings(settings) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.settings = { ...data.settings, ...settings };
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('settings')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('settings')
+                            .update(settings)
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('settings')
+                            .insert([settings]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating settings:', error);
+                    throw error;
+                }
+            }
+
+            // Messages methods
+            async getMessages() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.messages || [];
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('messages')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    return data || [];
+                } catch (error) {
+                    console.error('Error getting messages:', error);
+                    return [];
+                }
+            }
+
+            async addMessage(message) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    message.id = Date.now().toString();
+                    message.created_at = new Date().toISOString();
+                    data.messages = data.messages || [];
+                    data.messages.push(message);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return message;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('messages')
+                        .insert([message])
+                        .select();
+
+                    if (error) throw error;
+                    return data[0];
+                } catch (error) {
+                    console.error('Error adding message:', error);
+                    throw error;
+                }
+            }
+
+            async deleteMessage(id) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.messages = data.messages.filter(item => item.id !== id);
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    const { error } = await window.supabase
+                        .from('messages')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                } catch (error) {
+                    console.error('Error deleting message:', error);
+                    throw error;
+                }
+            }
+
+            // Admin methods
+            async checkAdmin(username, password) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    const admin = data.admin || {};
+                    return admin.username === username && admin.password === password;
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('admin')
+                        .select('*')
+                        .eq('username', username)
+                        .eq('password', password)
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0;
+                } catch (error) {
+                    console.error('Error checking admin:', error);
+                    return false;
+                }
+            }
+
+            async updateAdmin(username, password) {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    data.admin = { username, password };
+                    localStorage.setItem('photographerDB', JSON.stringify(data));
+                    return;
+                }
+
+                try {
+                    // First try to update existing record
+                    const { data: existing } = await window.supabase
+                        .from('admin')
+                        .select('id')
+                        .limit(1);
+
+                    if (existing && existing.length > 0) {
+                        const { error } = await window.supabase
+                            .from('admin')
+                            .update({ username, password })
+                            .eq('id', existing[0].id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await window.supabase
+                            .from('admin')
+                            .insert([{ username, password }]);
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    console.error('Error updating admin:', error);
+                    throw error;
+                }
+            }
+
+            async getAdmin() {
+                if (!this.isSupabaseReady) {
+                    const data = JSON.parse(localStorage.getItem('photographerDB') || '{}');
+                    return data.admin || {};
+                }
+
+                try {
+                    const { data, error } = await window.supabase
+                        .from('admin')
+                        .select('*')
+                        .limit(1);
+
+                    if (error) throw error;
+                    return data && data.length > 0 ? data[0] : {};
+                } catch (error) {
+                    console.error('Error getting admin:', error);
+                    return {};
+                }
+            }
+
+            // Image upload method
+            async uploadImage(file) {
+                if (!this.isSupabaseReady) {
+                    // Convert to base64 for demo mode
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                try {
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const { data, error } = await window.supabase.storage
+                        .from('images')
+                        .upload(fileName, file);
+
+                    if (error) throw error;
+
+                    // Get public URL
+                    const { data: { publicUrl } } = window.supabase.storage
+                        .from('images')
+                        .getPublicUrl(fileName);
+
+                    return publicUrl;
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    // Fallback to base64 if upload fails
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+        }
 // 🔒 نظام الحماية المتقدم لموقع جميل غانم
 class SecurityManager {
     constructor() {
@@ -774,57 +1482,31 @@ const security = new SecurityManager();
             menu.classList.toggle('hidden');
         }
 
-        // Portfolio functions (معرض الصور)
+        // Portfolio functions
         async function loadPortfolio() {
             try {
                 showLoading('portfolioLoading');
                 hideContent('portfolioGrid');
-                // جلب الصور من جدول portfolio
-                const { data: portfolio, error } = await window.supabase
-                    .from('portfolio')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                
+                const portfolio = await db.getPortfolio();
                 const grid = document.getElementById('portfolioGrid');
-                if (error) throw error;
-                if (!portfolio || portfolio.length === 0) {
+                
+                if (portfolio.length === 0) {
                     grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
                 } else {
-                    // لكل صورة، جلب عدد الإعجابات والتعليقات
-                    const likesData = await getAllLikes('portfolio');
-                    const commentsData = await getAllComments('portfolio');
-                    grid.innerHTML = portfolio.map(item => {
-                        const likes = likesData.filter(l => l.item_id === item.id).length;
-                        const comments = commentsData.filter(c => c.item_id === item.id);
-                        const userLiked = hasUserLiked('portfolio', item.id);
-                        return `
-                        <div class="portfolio-item" data-category="${item.category}">
+                    grid.innerHTML = portfolio.map(item => `
+                        <div class="gallery-item portfolio-item" data-category="${item.category}">
                             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                                 <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
                                 <div class="p-4">
                                     <h3 class="font-bold text-lg mb-2">${item.title}</h3>
-                                    <p class="text-gray-600 text-sm mb-2">${item.description || ''}</p>
-                                    <div class="flex items-center gap-4 mb-2">
-                                        <button class="like-btn" onclick="likeItem('portfolio', ${item.id}, this)" ${userLiked ? 'disabled' : ''}>
-                                            <i class="fa${userLiked ? 's' : 'r'} fa-heart text-red-500"></i> <span>${likes}</span>
-                                        </button>
-                                        <span><i class="far fa-comment"></i> ${comments.length}</span>
-                                    </div>
-                                    <div class="comments-section mt-2">
-                                        <div class="comments-list mb-2" style="max-height:80px;overflow-y:auto;">
-                                            ${comments.map(c => `<div class='text-xs mb-1'><b>${c.name}:</b> ${c.comment}</div>`).join('')}
-                                        </div>
-                                        <form onsubmit="return submitComment(event, 'portfolio', ${item.id})" class="flex gap-2">
-                                            <input type="text" name="name" placeholder="اسمك" class="border rounded p-1 text-xs" required style="width:70px;">
-                                            <input type="text" name="comment" placeholder="تعليقك..." class="border rounded p-1 text-xs flex-1" required>
-                                            <button type="submit" class="bg-brand-red text-white px-2 rounded text-xs">إرسال</button>
-                                        </form>
-                                    </div>
+                                    <p class="text-gray-600 text-sm">${item.description}</p>
                                 </div>
                             </div>
                         </div>
-                        `;
-                    }).join('');
+                    `).join('');
                 }
+                
                 hideLoading('portfolioLoading');
                 showContent('portfolioGrid');
             } catch (error) {
@@ -834,66 +1516,6 @@ const security = new SecurityManager();
                 document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
             }
         }
-// ========== دوال الإعجاب والتعليق ========== //
-function getUserIP() {
-    // استخدم localStorage كمعرف بديل للمستخدم (غير دقيق لكن يكفي للعامة)
-    let ip = localStorage.getItem('jameel_user_ip');
-    if (!ip) {
-        ip = 'ip_' + Math.random().toString(36).substring(2, 12);
-        localStorage.setItem('jameel_user_ip', ip);
-    }
-    return ip;
-}
-
-function hasUserLiked(item_type, item_id) {
-    const liked = JSON.parse(localStorage.getItem('jameel_likes') || '{}');
-    return liked[`${item_type}_${item_id}`] === true;
-}
-
-function setUserLiked(item_type, item_id) {
-    const liked = JSON.parse(localStorage.getItem('jameel_likes') || '{}');
-    liked[`${item_type}_${item_id}`] = true;
-    localStorage.setItem('jameel_likes', JSON.stringify(liked));
-}
-
-async function likeItem(item_type, item_id, btn) {
-    const user_ip = getUserIP();
-    try {
-        btn.disabled = true;
-        await window.supabase.from('likes').insert({ item_type, item_id, user_ip });
-        setUserLiked(item_type, item_id);
-        await loadPortfolio();
-    } catch (e) {
-        alert('حدث خطأ في تسجيل الإعجاب');
-        btn.disabled = false;
-    }
-}
-
-async function getAllLikes(item_type) {
-    const { data, error } = await window.supabase.from('likes').select('*').eq('item_type', item_type);
-    return data || [];
-}
-
-async function getAllComments(item_type) {
-    const { data, error } = await window.supabase.from('comments').select('*').eq('item_type', item_type).eq('is_approved', true);
-    return data || [];
-}
-
-async function submitComment(e, item_type, item_id) {
-    e.preventDefault();
-    const form = e.target;
-    const name = form.name.value.trim();
-    const comment = form.comment.value.trim();
-    if (!name || !comment) return false;
-    try {
-        await window.supabase.from('comments').insert({ item_type, item_id, name, comment });
-        form.reset();
-        await loadPortfolio();
-    } catch (err) {
-        alert('حدث خطأ في إضافة التعليق');
-    }
-    return false;
-}
 
         function filterPortfolio(category) {
             const items = document.querySelectorAll('.portfolio-item');
@@ -1057,80 +1679,164 @@ async function submitComment(e, item_type, item_id) {
                 
                 await db.addMessage(message);
                 alert('تم إرسال رسالتك بنجاح! سأتواصل معك قريباً.');
-                this.reset();
-                
-                submitBtn.classList.remove('hidden');
-                loadingBtn.classList.add('hidden');
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('حدث خطأ في إرسال الرسالة. يرجى المحاولة مرة أخرى.');
-                
-                document.getElementById('contactSubmitText').classList.remove('hidden');
-                document.getElementById('contactSubmitLoading').classList.add('hidden');
+                try {
+                    showLoading('portfolioLoading');
+                    hideContent('portfolioGrid');
+                    // جلب الصور من جدول portfolio
+                    const { data: portfolio, error } = await window.supabase
+                        .from('portfolio')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    const grid = document.getElementById('portfolioGrid');
+                    if (error) throw error;
+                    if (!portfolio || portfolio.length === 0) {
+                        grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
+                    } else {
+                        // جلب الإعجابات والتعليقات
+                        const likesData = await getAllLikes('portfolio');
+                        const commentsData = await getAllComments('portfolio');
+                        grid.innerHTML = portfolio.map(item => {
+                            const likes = likesData.filter(l => l.item_id === item.id).length;
+                            const comments = commentsData.filter(c => c.item_id === item.id);
+                            const userLiked = hasUserLiked('portfolio', item.id);
+                            return `
+                            <div class="portfolio-item" data-category="${item.category}">
+                                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                                    <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg mb-2">${item.title}</h3>
+                                        <p class="text-gray-600 text-sm mb-2">${item.description || ''}</p>
+                                        <div class="flex items-center gap-4 mb-2">
+                                            <button class="like-btn" onclick="likeItem('portfolio', ${item.id}, this)" ${userLiked ? 'disabled' : ''}>
+                                                <i class="fa${userLiked ? 's' : 'r'} fa-heart text-red-500"></i> <span>${likes}</span>
+                                            </button>
+                                            <span><i class="far fa-comment"></i> ${comments.length}</span>
+                                        </div>
+                                        <div class="comments-section mt-2">
+                                            <div class="comments-list mb-2" style="max-height:80px;overflow-y:auto;">
+                                                ${comments.map(c => `<div class='text-xs mb-1'><b>${c.name}:</b> ${c.comment}</div>`).join('')}
+                                            </div>
+                                            <form onsubmit="return submitComment(event, 'portfolio', ${item.id})" class="flex gap-2">
+                                                <input type="text" name="name" placeholder="اسمك" class="border rounded p-1 text-xs" required style="width:70px;">
+                                                <input type="text" name="comment" placeholder="تعليقك..." class="border rounded p-1 text-xs flex-1" required>
+                                                <button type="submit" class="bg-brand-red text-white px-2 rounded text-xs">إرسال</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+                    }
+                    hideLoading('portfolioLoading');
+                    showContent('portfolioGrid');
+                } catch (error) {
+                    console.error('Error loading portfolio:', error);
+                    hideLoading('portfolioLoading');
+                    showContent('portfolioGrid');
+                    document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
+                }
             }
-        });
-
-        // Lightbox functions
-        function openLightbox(imageSrc) {
-            document.getElementById('lightboxImg').src = imageSrc;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
-
-        function closeLightbox() {
-            document.getElementById('lightbox').classList.add('hidden');
-        }
-
-        // Admin functions
-        function showAdminLogin() {
-            document.getElementById('adminLoginModal').classList.remove('hidden');
-        }
-
-        function hideAdminLogin() {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-        }
-
-       
-document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+// ========== دوال الإعجاب والتعليق ========== //
+function getUserIP() {
+    let ip = localStorage.getItem('jameel_user_ip');
+    if (!ip) {
+        ip = 'ip_' + Math.random().toString(36).substring(2, 12);
+        localStorage.setItem('jameel_user_ip', ip);
+    }
+    return ip;
+}
+function hasUserLiked(item_type, item_id) {
+    const liked = JSON.parse(localStorage.getItem('jameel_likes') || '{}');
+    return liked[`${item_type}_${item_id}`] === true;
+}
+function setUserLiked(item_type, item_id) {
+    const liked = JSON.parse(localStorage.getItem('jameel_likes') || '{}');
+    liked[`${item_type}_${item_id}`] = true;
+    localStorage.setItem('jameel_likes', JSON.stringify(liked));
+}
+async function likeItem(item_type, item_id, btn) {
+    const user_ip = getUserIP();
+    try {
+        btn.disabled = true;
+        await window.supabase.from('likes').insert({ item_type, item_id, user_ip });
+        setUserLiked(item_type, item_id);
+        await loadPortfolio();
+    } catch (e) {
+        alert('حدث خطأ في تسجيل الإعجاب');
+        btn.disabled = false;
+    }
+}
+async function getAllLikes(item_type) {
+    const { data, error } = await window.supabase.from('likes').select('*').eq('item_type', item_type);
+    return data || [];
+}
+async function getAllComments(item_type) {
+    const { data, error } = await window.supabase.from('comments').select('*').eq('item_type', item_type).eq('is_approved', true);
+    return data || [];
+}
+async function submitComment(e, item_type, item_id) {
     e.preventDefault();
-    if (security.checkLockout()) return;
+    const form = e.target;
+    const name = form.name.value.trim();
+    const comment = form.comment.value.trim();
+    if (!name || !comment) return false;
+    try {
+        await window.supabase.from('comments').insert({ item_type, item_id, name, comment });
+        form.reset();
+        await loadPortfolio();
+    } catch (err) {
+        alert('حدث خطأ في إضافة التعليق');
+    }
+    return false;
+}
+    e.preventDefault();
+    
+    // فحص الحظر
+    if (security.checkLockout()) {
+        return;
+    }
+    
     try {
         const loginText = document.getElementById('loginText');
         const loginLoading = document.getElementById('loginLoading');
+        
         loginText.classList.add('hidden');
         loginLoading.classList.remove('hidden');
+        
         const username = document.getElementById('adminUsername').value;
         const password = document.getElementById('adminPassword').value;
+        
         if (!username || !password) {
             alert('يرجى إدخال اسم المستخدم وكلمة المرور');
             loginText.classList.remove('hidden');
             loginLoading.classList.add('hidden');
             return;
         }
-        // تحقق من جدول admin
-        const { data: admin, error } = await window.supabase
-            .from('admin')
-            .select('*')
-            .eq('username', username)
-            .single();
-        if (error || !admin || admin.password_hash !== password) {
+        
+        const isValid = await db.checkAdmin(username, password);
+        
+        if (isValid) {
+            security.recordSuccessfulLogin();
+            isAdminLoggedIn = true;
+            hideAdminLogin();
+            showAdminPanel();
+            await loadAdminContent();
+            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
+        } else {
             security.recordFailedLogin();
             const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
-            alert('❌ بيانات خاطئة. المحاولات المتبقية: ' + remainingAttempts);
-            loginText.classList.remove('hidden');
-            loginLoading.classList.add('hidden');
-            return;
+            if (remainingAttempts > 0) {
+                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
+            }
         }
-        security.recordSuccessfulLogin();
-        isAdminLoggedIn = true;
-        hideAdminLogin();
-        showAdminPanel();
-        await loadAdminContent();
-        alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
+        
         loginText.classList.remove('hidden');
         loginLoading.classList.add('hidden');
     } catch (error) {
         console.error('Error during login:', error);
         alert('حدث خطأ أثناء تسجيل الدخول');
+        
         document.getElementById('loginText').classList.remove('hidden');
         document.getElementById('loginLoading').classList.add('hidden');
     }
@@ -1176,20 +1882,17 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
         // Admin Portfolio Management
         async function loadAdminPortfolio() {
             try {
-                const { data: portfolio, error } = await window.supabase
-                    .from('portfolio')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const portfolio = await db.getPortfolio();
                 const list = document.getElementById('adminPortfolioList');
-                if (error) throw error;
-                if (!portfolio || portfolio.length === 0) {
+                
+                if (portfolio.length === 0) {
                     list.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400">لا توجد صور في المعرض</div>';
                 } else {
                     list.innerHTML = portfolio.map(item => `
                         <div class="bg-gray-600 p-4 rounded-lg">
                             <img src="${item.image_url}" alt="${item.title}" class="w-full h-32 object-cover rounded mb-3">
                             <h4 class="text-white font-bold mb-2">${item.title}</h4>
-                            <p class="text-gray-300 text-sm mb-3">${item.description || ''}</p>
+                            <p class="text-gray-300 text-sm mb-3">${item.description}</p>
                             <div class="flex space-x-2 space-x-reverse">
                                 <button onclick="editPortfolioItem('${item.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                                     <i class="fas fa-edit ml-1"></i>تعديل
