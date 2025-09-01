@@ -319,7 +319,7 @@
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-8">
         <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2025 هشام الفقيه | 774426179 - جميع الحقوق محفوظة</p>
+            <p>&copy; 2024 جميل غانم - جميع الحقوق محفوظة</p>
         </div>
     </footer>
 
@@ -1698,8 +1698,6 @@ const security = new SecurityManager();
         function hideAdminLogin() {
             document.getElementById('adminLoginModal').classList.add('hidden');
         }
-
-       
 document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -2368,7 +2366,7 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
         setTimeout(() => {
             const notice = document.getElementById('successNotice');
             if (notice && db.isSupabaseReady) {
-                notice.style.display = 'none';	
+                notice.style.display = 'none';
             }
         }, 8000);
     </script>
