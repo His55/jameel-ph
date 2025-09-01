@@ -329,7 +329,7 @@
             <div class="bg-white rounded-lg p-8 max-w-md w-full">
                 <h3 class="text-2xl font-bold mb-6 text-center text-black">دخول المدير</h3>
                 <form id="adminLoginForm">
-                                        <input type="email" id="adminUsername" placeholder="البريد الإلكتروني" class="w-full p-3 mb-4 border rounded" required>
+                    <input type="text" id="adminUsername" placeholder="اسم المستخدم" class="w-full p-3 mb-4 border rounded" required>
                     <input type="password" id="adminPassword" placeholder="كلمة المرور" class="w-full p-3 mb-6 border rounded" required>
                     <div class="flex space-x-4 space-x-reverse">
                         <button type="submit" class="flex-1 bg-brand-red text-white py-3 rounded hover:bg-red-700">
@@ -338,9 +338,6 @@
                         </button>
                         <button type="button" onclick="hideAdminLogin()" class="flex-1 bg-gray-300 text-black py-3 rounded hover:bg-gray-400">إلغاء</button>
                     </div>
-                                        <div class="mt-4 text-center">
-                                            <a href="#" onclick="showResetPasswordModal()" class="text-brand-red hover:underline text-sm">نسيت كلمة المرور؟</a>
-                                        </div>
                 </form>
 <!-- مودال استعادة كلمة المرور -->
 <div id="resetPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal">
@@ -1017,29 +1014,34 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
         const loginLoading = document.getElementById('loginLoading');
         loginText.classList.add('hidden');
         loginLoading.classList.remove('hidden');
-        const email = document.getElementById('adminUsername').value;
+        const username = document.getElementById('adminUsername').value;
         const password = document.getElementById('adminPassword').value;
-        if (!email || !password) {
-            alert('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+        if (!username || !password) {
+            alert('يرجى إدخال اسم المستخدم وكلمة المرور');
             loginText.classList.remove('hidden');
             loginLoading.classList.add('hidden');
             return;
         }
-        const isValid = await supabaseLogin(email, password);
-        if (isValid) {
-            security.recordSuccessfulLogin();
-            isAdminLoggedIn = true;
-            hideAdminLogin();
-            showAdminPanel();
-            await loadAdminContent();
-            alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
-        } else {
+        // تحقق من جدول admin
+        const { data: admin, error } = await window.supabase
+            .from('admin')
+            .select('*')
+            .eq('username', username)
+            .single();
+        if (error || !admin || admin.password_hash !== password) {
             security.recordFailedLogin();
             const remainingAttempts = security.maxLoginAttempts - security.loginAttempts.count;
-            if (remainingAttempts > 0) {
-                alert(`❌ بيانات خاطئة. المحاولات المتبقية: ${remainingAttempts}`);
-            }
+            alert('❌ بيانات خاطئة. المحاولات المتبقية: ' + remainingAttempts);
+            loginText.classList.remove('hidden');
+            loginLoading.classList.add('hidden');
+            return;
         }
+        security.recordSuccessfulLogin();
+        isAdminLoggedIn = true;
+        hideAdminLogin();
+        showAdminPanel();
+        await loadAdminContent();
+        alert('🎉 مرحباً جميل! تم تسجيل الدخول بأمان.');
         loginText.classList.remove('hidden');
         loginLoading.classList.add('hidden');
     } catch (error) {
