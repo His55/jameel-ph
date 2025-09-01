@@ -81,11 +81,11 @@
         .brand-red-hover:hover { background-color: #b91c1c; }
         .text-brand-red { color: #dc2626; }
         
-        .gallery-item {
+        .portfolio-item {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .gallery-item:hover {
+        .portfolio-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
@@ -793,7 +793,7 @@ const security = new SecurityManager();
                     grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
                 } else {
                     grid.innerHTML = portfolio.map(item => `
-                        <div class="gallery-item portfolio-item" data-category="${item.category}">
+                        <div class="portfolio-item portfolio-item" data-category="${item.category}">
                             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                                 <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
                                 <div class="p-4">
