@@ -784,7 +784,7 @@ const security = new SecurityManager();
                 hideContent('portfolioGrid');
                 // جلب الصور من جدول portfolio
                 const { data: portfolio, error } = await window.supabase
-                    .from('portfolio')
+                    .from('gallery')
                     .select('*')
                     .order('created_at', { ascending: false });
                 const grid = document.getElementById('portfolioGrid');
@@ -1091,7 +1091,7 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
         async function loadAdminPortfolio() {
             try {
                 const { data: portfolio, error } = await window.supabase
-                    .from('portfolio')
+                    .from('gallery')
                     .select('*')
                     .order('created_at', { ascending: false });
                 const list = document.getElementById('adminPortfolioList');
