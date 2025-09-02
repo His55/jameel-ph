@@ -158,9 +158,16 @@ const logoutBtnMobile = document.getElementById('logout-btn-mobile');
                 </button>
 <script>
 // ربط أزرار تسجيل الدخول/إنشاء حساب/تسجيل الخروج مع الجلسة
-const currentUser = JSON.parse(localStorage.getItem("user"));
+let currentUser = null;
+const loginBtn = document.getElementById('login-btn');
+const registerBtn = document.getElementById('register-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const loginBtnMobile = document.getElementById('login-btn-mobile');
+const registerBtnMobile = document.getElementById('register-btn-mobile');
+const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 
 function updateAuthButtons() {
+    currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser) {
         if (loginBtn) loginBtn.classList.add('hidden');
         if (registerBtn) registerBtn.classList.add('hidden');
@@ -181,17 +188,19 @@ function updateAuthButtons() {
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem("user");
+        updateAuthButtons();
         window.location.reload();
     });
 }
 if (logoutBtnMobile) {
     logoutBtnMobile.addEventListener('click', () => {
         localStorage.removeItem("user");
+        updateAuthButtons();
         window.location.reload();
     });
 }
 
-updateAuthButtons();
+window.addEventListener('DOMContentLoaded', updateAuthButtons);
 </script>
             </div>
         </div>
@@ -296,13 +305,15 @@ updateAuthButtons();
                                 portfolio.forEach(item => {
                                     const div = document.createElement('div');
                                     div.classList.add("bg-white", "rounded-lg", "shadow-md", "p-4");
+                                    // استخدم currentUser من localStorage دائماً
+                                    const user = JSON.parse(localStorage.getItem("user"));
                                     div.innerHTML = `
                                         <img src="${item.image_url}" alt="${item.title}" class="rounded-lg w-full mb-3 cursor-pointer">
                                         <h3 class="text-lg font-bold">${item.title}</h3>
                                         <p class="text-gray-600">${item.description || ''}</p>
 
                                         <!-- زر مشاركة واتساب -->
-                                        <a href="https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: https://jameel-ph.github.io/?img=' + item.id)}" target="_blank" class="block mt-2 text-green-600 hover:text-green-800 text-sm"><i class="fab fa-whatsapp"></i> مشاركة الصورة على واتساب</a>
+                                        <a href="https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: https://his55.github.io/jameel-ph/photo.html?img=' + item.id)}" target="_blank" class="block mt-2 text-green-600 hover:text-green-800 text-sm"><i class="fab fa-whatsapp"></i> مشاركة الصورة على واتساب</a>
 
                                         <!-- زر الإعجاب -->
                                         <button onclick="likeImage(${item.id})" class="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2">
@@ -314,7 +325,7 @@ updateAuthButtons();
                                         <div class="mt-4">
                                             <h4 class="font-bold text-gray-700 mb-2">💬 التعليقات</h4>
                                             <div id="comments-list-${item.id}" class="space-y-2 mb-2"></div>
-                                            ${currentUser ? `
+                                            ${user ? `
                                                 <form onsubmit="addComment(event, ${item.id})">
                                                     <textarea id="comment-${item.id}" placeholder="أضف تعليقك..." class="border rounded p-2 w-full mb-2" required></textarea>
                                                     <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">إضافة تعليق</button>
@@ -354,7 +365,8 @@ updateAuthButtons();
 
                             // إضافة إعجاب
                             async function likeImage(portfolioId) {
-                                if (!currentUser) {
+                                const user = JSON.parse(localStorage.getItem("user"));
+                                if (!user) {
                                     alert("🔒 يجب تسجيل الدخول لتسجيل إعجاب");
                                     return;
                                 }
@@ -371,7 +383,7 @@ updateAuthButtons();
                                         .from('likes')
                                         .select('*')
                                         .eq('portfolio_id', portfolioId)
-                                        .eq('user_id', currentUser.id)
+                                        .eq('user_id', user.id)
                                         .maybeSingle();
                                     if (likeError) throw likeError;
                                     if (existingLike) {
@@ -380,7 +392,7 @@ updateAuthButtons();
                                     }
                                     const { error } = await supabase
                                         .from('likes')
-                                        .insert([{ portfolio_id: portfolioId, user_id: currentUser.id, user_name: currentUser.name, image_url: portfolioItem?.image_url }]);
+                                        .insert([{ portfolio_id: portfolioId, user_id: user.id, user_name: user.name, image_url: portfolioItem?.image_url }]);
                                     if (error) throw error;
                                     await loadLikesAndComments(portfolioId);
                                 } catch (err) {
@@ -391,6 +403,7 @@ updateAuthButtons();
                             // إضافة تعليق
                             async function addComment(event, portfolioId) {
                                 event.preventDefault();
+                                const user = JSON.parse(localStorage.getItem("user"));
                                 const comment = document.getElementById(`comment-${portfolioId}`).value;
                                 try {
                                     // جلب بيانات الصورة
@@ -402,7 +415,7 @@ updateAuthButtons();
                                     if (portfolioError) throw portfolioError;
                                     const { error } = await supabase
                                         .from('comments')
-                                        .insert([{ portfolio_id: portfolioId, user_id: currentUser.id, user_name: currentUser.name, image_url: portfolioItem?.image_url, comment }]);
+                                        .insert([{ portfolio_id: portfolioId, user_id: user.id, user_name: user.name, image_url: portfolioItem?.image_url, comment }]);
                                     if (error) throw error;
                                     document.getElementById(`comment-${portfolioId}`).value = '';
                                     await loadLikesAndComments(portfolioId);
@@ -2675,3 +2688,4 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
                 
 
        
+
