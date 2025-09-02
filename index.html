@@ -59,15 +59,12 @@
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase Configuration (إعداداتك الصحيحة)
-        const SUPABASE_URL = 'https://uspxswigpccxmgujpdpg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY';
-        
-        // Initialize Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Make Supabase available globally
-        window.supabase = supabase;
+    // Supabase Configuration (إعداداتك الصحيحة)
+    const SUPABASE_URL = 'https://uspxswigpccxmgujpdpg.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY';
+    // Initialize Supabase client and make it available globally
+    window.supabase = window.supabase || {};
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
     
     <style>
@@ -84,7 +81,6 @@
         .gallery-item {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
         .gallery-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -141,12 +137,15 @@
                     <h1 class="text-2xl font-bold text-brand-red">جميل غانم</h1>
                     <span class="text-gray-300">مصور فوتوغرافي</span>
                 </div>
-                <div class="hidden md:flex space-x-6 space-x-reverse">
+                <div class="hidden md:flex space-x-6 space-x-reverse items-center">
                     <a href="#home" class="hover:text-brand-red transition-colors">الرئيسية</a>
                     <a href="#portfolio" class="hover:text-brand-red transition-colors">معرض الأعمال</a>
                     <a href="#services" class="hover:text-brand-red transition-colors">الخدمات</a>
                     <a href="#about" class="hover:text-brand-red transition-colors">نبذة عني</a>
                     <a href="#contact" class="hover:text-brand-red transition-colors">التواصل</a>
+                    <a href="login.html" id="login-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">تسجيل الدخول</a>
+                    <a href="register.html" id="register-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">إنشاء حساب</a>
+                    <button id="logout-btn" class="hidden bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">تسجيل الخروج</button>
                     <button onclick="showAdminLogin()" class="bg-brand-red px-4 py-2 rounded hover:bg-red-700 transition-colors">
                         <i class="fas fa-cog ml-2"></i>إدارة الموقع
                     </button>
@@ -154,6 +153,24 @@
                 <button class="md:hidden" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
+<script>
+// ربط أزرار تسجيل الدخول/إنشاء حساب/تسجيل الخروج مع الجلسة
+const loginBtn = document.getElementById('login-btn');
+const registerBtn = document.getElementById('register-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const currentUser = JSON.parse(localStorage.getItem("user"));
+if (loginBtn && registerBtn && logoutBtn) {
+    if (currentUser) {
+        loginBtn.classList.add('hidden');
+        registerBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+    }
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem("user");
+        window.location.reload();
+    });
+}
+</script>
             </div>
         </div>
         
@@ -220,10 +237,158 @@
                 <p class="mt-4 text-gray-600">جاري تحميل المعرض...</p>
             </div>
             
-            <!-- Portfolio Grid -->
-            <div id="portfolioGrid" class="portfolio-grid hidden">
-                <!-- Portfolio items will be loaded here -->
-            </div>
+                        <!-- محتوى الصور -->
+                        <main class="p-6">
+                            <div id="portfolioGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+                        </main>
+
+                        <script>
+                            // استخدم متغيرات Supabase العامة
+                            const supabase = window.supabase;
+                            const portfolioGrid = document.getElementById('portfolioGrid');
+                            // استخدم المتغيرات المعرفة مسبقاً للجلسة
+
+                            if (loginBtn && registerBtn && logoutBtn) {
+                                if (currentUser) {
+                                    loginBtn.classList.add('hidden');
+                                    registerBtn.classList.add('hidden');
+                                    logoutBtn.classList.remove('hidden');
+                                }
+                                logoutBtn.addEventListener('click', () => {
+                                    localStorage.removeItem("user");
+                                    window.location.reload();
+                                });
+                            }
+
+                            // تحميل الصور من قاعدة البيانات
+                            async function loadPortfolio() {
+                                const { data: portfolio, error } = await supabase
+                                    .from('portfolio')
+                                    .select('*')
+                                    .order('created_at', { ascending: false });
+
+                                if (error) {
+                                    portfolioGrid.innerHTML = `<p class="text-red-600 text-center">⚠️ حدث خطأ أثناء تحميل الصور</p>`;
+                                    return;
+                                }
+
+                                portfolioGrid.innerHTML = '';
+                                portfolio.forEach(item => {
+                                    const div = document.createElement('div');
+                                    div.classList.add("bg-white", "rounded-lg", "shadow-md", "p-4");
+                                    div.innerHTML = `
+                                        <img src="${item.image_url}" alt="${item.title}" class="rounded-lg w-full mb-3 cursor-pointer">
+                                        <h3 class="text-lg font-bold">${item.title}</h3>
+                                        <p class="text-gray-600">${item.description || ''}</p>
+
+                                        <!-- زر مشاركة واتساب -->
+                                        <a href="https://wa.me/?text=${encodeURIComponent(item.image_url)}" target="_blank" class="block mt-2 text-green-600 hover:text-green-800 text-sm"><i class="fab fa-whatsapp"></i> مشاركة الصورة على واتساب</a>
+
+                                        <!-- زر الإعجاب -->
+                                        <button onclick="likeImage(${item.id})" class="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2">
+                                            <i class="fas fa-heart"></i>
+                                            <span id="likes-count-${item.id}">0</span> إعجاب
+                                        </button>
+
+                                        <!-- التعليقات -->
+                                        <div class="mt-4">
+                                            <h4 class="font-bold text-gray-700 mb-2">💬 التعليقات</h4>
+                                            <div id="comments-list-${item.id}" class="space-y-2 mb-2"></div>
+                                            ${currentUser ? `
+                                                <form onsubmit="addComment(event, ${item.id})">
+                                                    <textarea id="comment-${item.id}" placeholder="أضف تعليقك..." class="border rounded p-2 w-full mb-2" required></textarea>
+                                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">إضافة تعليق</button>
+                                                </form>
+                                            ` : `<p class="text-gray-500 text-sm">🔒 يجب تسجيل الدخول لإضافة تعليق</p>`}
+                                        </div>
+                                    `;
+                                    portfolioGrid.appendChild(div);
+                                    // تحميل الإعجابات والتعليقات
+                                    loadLikesAndComments(item.id);
+                                });
+                            }
+
+                            // جلب الإعجابات والتعليقات
+                            async function loadLikesAndComments(portfolioId) {
+                                const { data: likes } = await supabase
+                                    .from('likes')
+                                    .select('*')
+                                    .eq('portfolio_id', portfolioId);
+                                document.getElementById(`likes-count-${portfolioId}`).textContent = likes.length;
+
+                                const { data: comments } = await supabase
+                                    .from('comments')
+                                    .select('*, users(name)')
+                                    .eq('portfolio_id', portfolioId)
+                                    .order('created_at', { ascending: false });
+
+                                const commentsList = document.getElementById(`comments-list-${portfolioId}`);
+                                commentsList.innerHTML = '';
+                                comments.forEach(comment => {
+                                    const div = document.createElement('div');
+                                    div.classList.add('bg-gray-100', 'p-2', 'rounded');
+                                    div.innerHTML = `<strong>${comment.users?.name || 'مستخدم'}</strong>: ${comment.comment}`;
+                                    commentsList.appendChild(div);
+                                });
+                            }
+
+                            // إضافة إعجاب
+                            async function likeImage(portfolioId) {
+                                if (!currentUser) {
+                                    alert("🔒 يجب تسجيل الدخول لتسجيل إعجاب");
+                                    return;
+                                }
+                                // جلب بيانات الصورة
+                                const { data: portfolioItem } = await supabase
+                                    .from('portfolio')
+                                    .select('image_url')
+                                    .eq('id', portfolioId)
+                                    .maybeSingle();
+                                // تحقق من وجود إعجاب مسبق
+                                const { data: existingLike } = await supabase
+                                    .from('likes')
+                                    .select('*')
+                                    .eq('portfolio_id', portfolioId)
+                                    .eq('user_id', currentUser.id)
+                                    .maybeSingle();
+                                if (existingLike) {
+                                    alert("❌ لقد أعجبت بهذه الصورة من قبل");
+                                    return;
+                                }
+                                const { error } = await supabase
+                                    .from('likes')
+                                    .insert([{ portfolio_id: portfolioId, user_id: currentUser.id, user_name: currentUser.name, image_url: portfolioItem?.image_url }]);
+                                if (!error) {
+                                    loadLikesAndComments(portfolioId);
+                                } else {
+                                    alert("⚠️ حصل خطأ أثناء تسجيل الإعجاب");
+                                }
+                            }
+
+                            // إضافة تعليق
+                            async function addComment(event, portfolioId) {
+                                event.preventDefault();
+                                const comment = document.getElementById(`comment-${portfolioId}`).value;
+                                // جلب بيانات الصورة
+                                const { data: portfolioItem } = await supabase
+                                    .from('portfolio')
+                                    .select('image_url')
+                                    .eq('id', portfolioId)
+                                    .maybeSingle();
+                                const { error } = await supabase
+                                    .from('comments')
+                                    .insert([{ portfolio_id: portfolioId, user_id: currentUser.id, user_name: currentUser.name, image_url: portfolioItem?.image_url, comment }]);
+                                if (!error) {
+                                    document.getElementById(`comment-${portfolioId}`).value = '';
+                                    loadLikesAndComments(portfolioId);
+                                } else {
+                                    alert("⚠️ حصل خطأ أثناء إضافة التعليق");
+                                }
+                            }
+
+                            // بدء التحميل
+                            loadPortfolio();
+                        </script>
         </div>
     </section>
 
@@ -1472,38 +1637,148 @@ const security = new SecurityManager();
 
         // Portfolio functions
         async function loadPortfolio() {
-            try {
-                showLoading('portfolioLoading');
-                hideContent('portfolioGrid');
-                
-                const portfolio = await db.getPortfolio();
-                const grid = document.getElementById('portfolioGrid');
-                
-                if (portfolio.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
-                } else {
-                    grid.innerHTML = portfolio.map(item => `
-                        <div class="gallery-item portfolio-item" data-category="${item.category}">
-                            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                                <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
-                                <div class="p-4">
-                                    <h3 class="font-bold text-lg mb-2">${item.title}</h3>
-                                    <p class="text-gray-600 text-sm">${item.description}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                        try {
+                                showLoading('portfolioLoading');
+                                hideContent('portfolioGrid');
+                                const supabase = window.supabase ? window.supabase.createClient(
+                                    "https://uspxswigpccxmgujpdpg.supabase.co",
+                                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY"
+                                ) : null;
+                                const currentUser = JSON.parse(localStorage.getItem("user"));
+                                const { data: portfolio, error } = await supabase
+                                    .from('portfolio')
+                                    .select('*')
+                                    .order('created_at', { ascending: false });
+                                const grid = document.getElementById('portfolioGrid');
+                                if (error || !portfolio) {
+                                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
+                                    hideLoading('portfolioLoading');
+                                    showContent('portfolioGrid');
+                                    return;
+                                }
+                                if (portfolio.length === 0) {
+                                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-600">لا توجد صور في المعرض حالياً</div>';
+                                } else {
+                                    grid.innerHTML = '';
+                                    for (const item of portfolio) {
+                                        const div = document.createElement('div');
+                                        div.classList.add("gallery-item", "portfolio-item");
+                                        div.setAttribute('data-category', item.category);
+                                        div.innerHTML = `
+                                            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                                                <img src="${item.image_url}" alt="${item.title}" class="w-full h-64 object-cover cursor-pointer" onclick="openLightbox('${item.image_url}')">
+                                                <div class="p-4">
+                                                    <h3 class="font-bold text-lg mb-2">${item.title}</h3>
+                                                    <p class="text-gray-600 text-sm">${item.description || ''}</p>
+                                                    <!-- زر مشاركة واتساب -->
+                                                    <a href="https://wa.me/?text=${encodeURIComponent(item.image_url)}" target="_blank" class="block mt-2 text-green-600 hover:text-green-800 text-sm"><i class="fab fa-whatsapp"></i> مشاركة الصورة على واتساب</a>
+                                                    <!-- زر الإعجاب -->
+                                                    <button onclick="likeImage(${item.id})" class="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span id="likes-count-${item.id}">0</span> إعجاب
+                                                    </button>
+                                                    <div class="mt-4">
+                                                        <h4 class="font-bold text-gray-700 mb-2">💬 التعليقات</h4>
+                                                        <div id="comments-list-${item.id}" class="space-y-2 mb-2"></div>
+                                                        ${currentUser ? `
+                                                            <form onsubmit="addComment(event, ${item.id})">
+                                                                <textarea id="comment-${item.id}" placeholder="أضف تعليقك..." class="border rounded p-2 w-full mb-2" required></textarea>
+                                                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">إضافة تعليق</button>
+                                                            </form>
+                                                        ` : `<p class="text-gray-500 text-sm">🔒 يجب تسجيل الدخول لإضافة تعليق</p>`}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        grid.appendChild(div);
+                                        loadLikesAndComments(item.id, supabase);
+                                    }
+                                }
+                                hideLoading('portfolioLoading');
+                                showContent('portfolioGrid');
+                        } catch (error) {
+                                console.error('Error loading portfolio:', error);
+                                hideLoading('portfolioLoading');
+                                showContent('portfolioGrid');
+                                document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
+                        }
                 }
-                
-                hideLoading('portfolioLoading');
-                showContent('portfolioGrid');
-            } catch (error) {
-                console.error('Error loading portfolio:', error);
-                hideLoading('portfolioLoading');
-                showContent('portfolioGrid');
-                document.getElementById('portfolioGrid').innerHTML = '<div class="col-span-full text-center py-8 text-red-600">حدث خطأ في تحميل المعرض</div>';
-            }
-        }
+
+                // جلب الإعجابات والتعليقات
+                async function loadLikesAndComments(portfolioId, supabase) {
+                    const { data: likes } = await supabase
+                        .from('likes')
+                        .select('*')
+                        .eq('portfolio_id', portfolioId);
+                    document.getElementById(`likes-count-${portfolioId}`).textContent = likes.length;
+
+                    const { data: comments } = await supabase
+                        .from('comments')
+                        .select('*, users(name)')
+                        .eq('portfolio_id', portfolioId)
+                        .order('created_at', { ascending: false });
+
+                    const commentsList = document.getElementById(`comments-list-${portfolioId}`);
+                    commentsList.innerHTML = '';
+                    comments.forEach(comment => {
+                        const div = document.createElement('div');
+                        div.classList.add('bg-gray-100', 'p-2', 'rounded');
+                        div.innerHTML = `<strong>${comment.users?.name || 'مستخدم'}</strong>: ${comment.comment}`;
+                        commentsList.appendChild(div);
+                    });
+                }
+
+                // إضافة إعجاب
+                async function likeImage(portfolioId) {
+                    const supabase = window.supabase ? window.supabase.createClient(
+                        "https://uspxswigpccxmgujpdpg.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY"
+                    ) : null;
+                    const currentUser = JSON.parse(localStorage.getItem("user"));
+                    if (!currentUser) {
+                        alert("🔒 يجب تسجيل الدخول لتسجيل إعجاب");
+                        return;
+                    }
+                    // تحقق من وجود إعجاب مسبق
+                    const { data: existingLike } = await supabase
+                        .from('likes')
+                        .select('*')
+                        .eq('portfolio_id', portfolioId)
+                        .eq('user_id', currentUser.id)
+                        .maybeSingle();
+                    if (existingLike) {
+                        alert("❌ لقد أعجبت بهذه الصورة من قبل");
+                        return;
+                    }
+                    const { error } = await supabase
+                        .from('likes')
+                        .insert([{ portfolio_id: portfolioId, user_id: currentUser.id }]);
+                    if (!error) {
+                        loadLikesAndComments(portfolioId, supabase);
+                    } else {
+                        alert("⚠️ حصل خطأ أثناء تسجيل الإعجاب");
+                    }
+                }
+
+                // إضافة تعليق
+                async function addComment(event, portfolioId) {
+                    event.preventDefault();
+                    const supabase = window.supabase ? window.supabase.createClient(
+                        "https://uspxswigpccxmgujpdpg.supabase.co",
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY"
+                    ) : null;
+                    const currentUser = JSON.parse(localStorage.getItem("user"));
+                    const comment = document.getElementById(`comment-${portfolioId}`).value;
+                    const { error } = await supabase
+                        .from('comments')
+                        .insert([{ portfolio_id: portfolioId, user_id: currentUser.id, comment }]);
+                                if (!error) {
+                                    document.getElementById(`comment-${portfolioId}`).value = '';
+                                    loadLikesAndComments(portfolioId, supabase);
+                                } else {
+                                    alert("⚠️ حصل خطأ أثناء إضافة التعليق");
+                                }
+                            }
 
         function filterPortfolio(category) {
             const items = document.querySelectorAll('.portfolio-item');
