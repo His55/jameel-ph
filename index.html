@@ -272,6 +272,12 @@ if (loginBtn && registerBtn && logoutBtn) {
                                     return;
                                 }
 
+                                // إذا لم توجد صور
+                                if (!portfolio || portfolio.length === 0) {
+                                    portfolioGrid.innerHTML = `<p class="text-gray-500 text-center">لا توجد صور في المعرض حالياً.</p>`;
+                                    return;
+                                }
+
                                 portfolioGrid.innerHTML = '';
                                 portfolio.forEach(item => {
                                     const div = document.createElement('div');
