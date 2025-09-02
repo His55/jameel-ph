@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الصورة | جميل غانم</title>
+    <meta name="description" content="تفاصيل صورة من معرض جميل غانم للتصوير الفوتوغرافي.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="تفاصيل صورة | جميل غانم">
+    <meta property="og:description" content="شاهد تفاصيل صورة من معرض جميل غانم وشاركها مع أصدقائك.">
+    <meta property="og:image" id="og-image">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .brand-red { color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center">
+    <div class="w-full max-w-xl bg-white rounded-lg shadow-lg p-6 mt-10">
+        <div id="imageSection" class="text-center mb-6"></div>
+        <div class="flex justify-between items-center mb-4">
+            <button id="likeBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2">
+                <i class="fas fa-heart"></i>
+                <span id="likesCount">0</span> إعجاب
+            </button>
+            <a id="whatsappShare" href="#" target="_blank" class="text-green-600 hover:text-green-800 text-lg">
+                <i class="fab fa-whatsapp"></i> مشاركة على واتساب
+            </a>
+        </div>
+        <div class="mb-4">
+            <h4 class="font-bold text-gray-700 mb-2">💬 التعليقات</h4>
+            <div id="commentsList" class="space-y-2 mb-2"></div>
+            <form id="commentForm" class="mt-2 hidden">
+                <textarea id="commentInput" placeholder="أضف تعليقك..." class="border rounded p-2 w-full mb-2" required></textarea>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">إضافة تعليق</button>
+            </form>
+            <p id="loginMsg" class="text-gray-500 text-sm hidden">🔒 يجب تسجيل الدخول لإضافة تعليق</p>
+        </div>
+        <a href="index.html" class="block text-center text-brand-red mt-4">العودة للمعرض</a>
+    </div>
+    <script>
+    // إعداد Supabase
+    const SUPABASE_URL = 'https://uspxswigpccxmgujpdpg.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY';
+    const supabase = window.supabase = window.supabase || window.supabase?.createClient?.(SUPABASE_URL, SUPABASE_KEY) || supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // جلب ID الصورة من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const imgId = urlParams.get('img');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    // عناصر الصفحة
+    const imageSection = document.getElementById('imageSection');
+    const likeBtn = document.getElementById('likeBtn');
+    const likesCount = document.getElementById('likesCount');
+    const commentsList = document.getElementById('commentsList');
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
+    const loginMsg = document.getElementById('loginMsg');
+    const whatsappShare = document.getElementById('whatsappShare');
+    const ogImage = document.getElementById('og-image');
+
+    // تحميل بيانات الصورة
+    async function loadPhoto() {
+        if (!imgId) {
+            imageSection.innerHTML = '<p class="text-red-600">لم يتم العثور على الصورة المطلوبة.</p>';
+            likeBtn.style.display = 'none';
+            commentForm.style.display = 'none';
+            whatsappShare.style.display = 'none';
+            return;
+        }
+        const { data: photo, error } = await supabase
+            .from('portfolio')
+            .select('*')
+            .eq('id', imgId)
+            .maybeSingle();
+        if (error || !photo) {
+            imageSection.innerHTML = '<p class="text-red-600">حدث خطأ أو لم يتم العثور على الصورة.</p>';
+            likeBtn.style.display = 'none';
+            commentForm.style.display = 'none';
+            whatsappShare.style.display = 'none';
+            return;
+        }
+        imageSection.innerHTML = `
+            <img src="${photo.image_url}" alt="${photo.title}" class="rounded-lg w-full mb-3 max-h-96 object-contain mx-auto">
+            <h2 class="text-xl font-bold mb-2">${photo.title}</h2>
+            <p class="text-gray-600 mb-2">${photo.description || ''}</p>
+        `;
+        // تحديث og:image
+        if (ogImage) ogImage.setAttribute('content', photo.image_url);
+        // تحديث رابط واتساب
+        whatsappShare.href = `https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: https://his55.github.io/jameel-ph/photo.html?img=' + imgId)}`;
+        // تحميل الإعجابات والتعليقات
+        await loadLikesAndComments();
+    }
+
+    // تحميل الإعجابات والتعليقات
+    async function loadLikesAndComments() {
+        // الإعجابات
+        const { data: likes } = await supabase
+            .from('likes')
+            .select('*')
+            .eq('portfolio_id', imgId);
+        likesCount.textContent = likes ? likes.length : 0;
+        // التعليقات
+        const { data: comments } = await supabase
+            .from('comments')
+            .select('*, users(name)')
+            .eq('portfolio_id', imgId)
+            .order('created_at', { ascending: false });
+        commentsList.innerHTML = '';
+        if (comments && comments.length > 0) {
+            comments.forEach(comment => {
+                const div = document.createElement('div');
+                div.classList.add('bg-gray-100', 'p-2', 'rounded');
+                div.innerHTML = `<strong>${comment.users?.name || comment.user_name || 'مستخدم'}</strong>: ${comment.comment}`;
+                commentsList.appendChild(div);
+            });
+        } else {
+            commentsList.innerHTML = '<p class="text-gray-500">لا توجد تعليقات بعد.</p>';
+        }
+    }
+
+    // منطق الإعجاب
+    likeBtn.onclick = async function() {
+        if (!currentUser) {
+            alert('🔒 يجب تسجيل الدخول لتسجيل إعجاب');
+            return;
+        }
+        // تحقق من وجود إعجاب مسبق
+        const { data: existingLike } = await supabase
+            .from('likes')
+            .select('*')
+            .eq('portfolio_id', imgId)
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+        if (existingLike) {
+            alert('❌ لقد أعجبت بهذه الصورة من قبل');
+            return;
+        }
+        const { error } = await supabase
+            .from('likes')
+            .insert([{ portfolio_id: imgId, user_id: currentUser.id, user_name: currentUser.name }]);
+        if (!error) {
+            await loadLikesAndComments();
+        } else {
+            alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب');
+        }
+    };
+
+    // منطق التعليق
+    if (currentUser) {
+        commentForm.classList.remove('hidden');
+        loginMsg.classList.add('hidden');
+        commentForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const comment = commentInput.value;
+            if (!comment) return;
+            const { error } = await supabase
+                .from('comments')
+                .insert([{ portfolio_id: imgId, user_id: currentUser.id, user_name: currentUser.name, comment }]);
+            if (!error) {
+                commentInput.value = '';
+                await loadLikesAndComments();
+            } else {
+                alert('⚠️ حصل خطأ أثناء إضافة التعليق');
+            }
+        };
+    } else {
+        commentForm.classList.add('hidden');
+        loginMsg.classList.remove('hidden');
+    }
+
+    // تحميل البيانات عند فتح الصفحة
+    loadPhoto();
+    </script>
+</body>
+</html>
