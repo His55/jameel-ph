@@ -35,6 +35,9 @@
 
 <!-- Schema.org structured data -->
 <script type="application/ld+json">
+const loginBtnMobile = document.getElementById('login-btn-mobile');
+const registerBtnMobile = document.getElementById('register-btn-mobile');
+const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 {
   "@context": "https://schema.org",
   "@type": "Person",
@@ -155,21 +158,40 @@
                 </button>
 <script>
 // ربط أزرار تسجيل الدخول/إنشاء حساب/تسجيل الخروج مع الجلسة
-const loginBtn = document.getElementById('login-btn');
-const registerBtn = document.getElementById('register-btn');
-const logoutBtn = document.getElementById('logout-btn');
 const currentUser = JSON.parse(localStorage.getItem("user"));
-if (loginBtn && registerBtn && logoutBtn) {
+
+function updateAuthButtons() {
     if (currentUser) {
-        loginBtn.classList.add('hidden');
-        registerBtn.classList.add('hidden');
-        logoutBtn.classList.remove('hidden');
+        if (loginBtn) loginBtn.classList.add('hidden');
+        if (registerBtn) registerBtn.classList.add('hidden');
+        if (logoutBtn) logoutBtn.classList.remove('hidden');
+        if (loginBtnMobile) loginBtnMobile.classList.add('hidden');
+        if (registerBtnMobile) registerBtnMobile.classList.add('hidden');
+        if (logoutBtnMobile) logoutBtnMobile.classList.remove('hidden');
+    } else {
+        if (loginBtn) loginBtn.classList.remove('hidden');
+        if (registerBtn) registerBtn.classList.remove('hidden');
+        if (logoutBtn) logoutBtn.classList.add('hidden');
+        if (loginBtnMobile) loginBtnMobile.classList.remove('hidden');
+        if (registerBtnMobile) registerBtnMobile.classList.remove('hidden');
+        if (logoutBtnMobile) logoutBtnMobile.classList.add('hidden');
     }
+}
+
+if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem("user");
         window.location.reload();
     });
 }
+if (logoutBtnMobile) {
+    logoutBtnMobile.addEventListener('click', () => {
+        localStorage.removeItem("user");
+        window.location.reload();
+    });
+}
+
+updateAuthButtons();
 </script>
             </div>
         </div>
@@ -184,7 +206,9 @@ if (loginBtn && registerBtn && logoutBtn) {
             <button onclick="showAdminLogin()" class="block w-full text-right py-2 text-brand-red">إدارة الموقع</button>
         </div>
     </nav>
-
+<a href="login.html" id="login-btn-mobile" class="block w-full text-right py-2 text-blue-500">تسجيل الدخول</a>
+<a href="register.html" id="register-btn-mobile" class="block w-full text-right py-2 text-green-500">إنشاء حساب</a>
+<button id="logout-btn-mobile" class="block w-full text-right py-2 text-red-500 hidden">تسجيل الخروج</button>
     <!-- Hero Section -->
     <section id="home" class="bg-black text-white pt-20 pb-16">
         <div class="container mx-auto px-4 text-center">
@@ -248,17 +272,7 @@ if (loginBtn && registerBtn && logoutBtn) {
                             const portfolioGrid = document.getElementById('portfolioGrid');
                             // استخدم المتغيرات المعرفة مسبقاً للجلسة
 
-                            if (loginBtn && registerBtn && logoutBtn) {
-                                if (currentUser) {
-                                    loginBtn.classList.add('hidden');
-                                    registerBtn.classList.add('hidden');
-                                    logoutBtn.classList.remove('hidden');
-                                }
-                                logoutBtn.addEventListener('click', () => {
-                                    localStorage.removeItem("user");
-                                    window.location.reload();
-                                });
-                            }
+                            // لا داعي لتكرار منطق الجلسة هنا، تم توحيده في الأعلى
 
                             // تحميل الصور من قاعدة البيانات
                             async function loadPortfolio() {
