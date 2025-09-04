@@ -166,11 +166,11 @@ const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 document.addEventListener('DOMContentLoaded', function() {
     updateAuthButtons();
     if (logoutBtnMobile) {
-        logoutBtnMobile.addEventListener('click', () => {
+        logoutBtnMobile.onclick = function() {
             localStorage.removeItem("user");
             updateAuthButtons();
             window.location.reload();
-        });
+        };
     }
 });
 
@@ -243,7 +243,7 @@ async function loadPortfolio() {
         }
         imgDiv.querySelector('.like-count').textContent = likesCount;
 
-        // منطق الإعجاب (نجمة صفراء)
+        // منطق الإعجاب (إعجاب واحد فقط لكل مستخدم)
         imgDiv.querySelector('.like-btn').onclick = async function() {
             const user = JSON.parse(localStorage.getItem('user'));
             if (!user) {
@@ -263,21 +263,22 @@ async function loadPortfolio() {
                     // إعادة تحميل عدد الإعجابات بعد الإضافة
                     const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
                     imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
-                    alert('✅ تم تسجيل الإعجاب!');
+                    // إظهار علامة الإعجاب فقط بدون تنبيه
                 } else {
-                    alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || '')); 
+                    alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || ''));
                 }
             } catch (err) {
-                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (err.message || '')); 
+                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (err.message || ''));
             }
         };
 
-        // زر واتساب: مشاركة الصورة في الحالة مع رابط الصورة مباشرة
+        // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
         const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
-        whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(img.image_url)}`;
-        // عند الضغط على الصورة نفسها يفتح رابط الصورة نفسها وليس الموقع
+        const siteUrl = window.location.origin + window.location.pathname;
+        whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: ' + img.image_url + '\nللمزيد زر الموقع: ' + siteUrl)}`;
+        // عند الضغط على الصورة نفسها يفتح رابط الموقع
         imgDiv.querySelector('.whatsapp-status-img').onclick = function() {
-            window.open(img.image_url, '_blank');
+            window.open(siteUrl, '_blank');
         };
     });
 }
