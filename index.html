@@ -236,7 +236,7 @@ async function loadPortfolio() {
         // تحميل عدد الإعجابات
         let likesCount = 0;
         try {
-            const { data: likes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
+            const { data: likes } = await window.supabase.from('likes').select('portfolio_id,user_id,user_name').eq('portfolio_id', img.id);
             likesCount = likes ? likes.length : 0;
         } catch (err) {
             likesCount = 0;
@@ -253,7 +253,7 @@ async function loadPortfolio() {
                 return;
             }
             try {
-                const { data: existingLike, error: checkError } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
+                const { data: existingLike, error: checkError } = await window.supabase.from('likes').select('portfolio_id,user_id,user_name').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
                 if (checkError) {
                     console.error('Supabase Like Check Error:', checkError);
                     alert('⚠️ حصل خطأ أثناء التحقق من الإعجاب: ' + (checkError.message || ''));
@@ -265,7 +265,7 @@ async function loadPortfolio() {
                 }
                 const { data: likeData, error } = await window.supabase.from('likes').insert([{ portfolio_id: Number(img.id), user_id: Number(user.id), user_name: user.name || '' }]);
                 if (!error) {
-                    const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
+                    const { data: newLikes } = await window.supabase.from('likes').select('portfolio_id,user_id,user_name').eq('portfolio_id', img.id);
                     imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
                 } else {
                     console.error('Supabase Like Error:', error);
