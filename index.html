@@ -426,7 +426,7 @@
                 .from('likes')
                 .select('portfolio_id,user_id,user_name')
                 .eq('portfolio_id', portfolioId);
-            document.getElementById(`likes-count-${portfolioId}`).textContent = likes.length;
+            document.getElementById(`likes-count-${portfolioId}`).textContent = likes && Array.isArray(likes) ? likes.length : 0;
         }
         loadPortfolio();
         </script>
