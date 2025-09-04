@@ -242,19 +242,22 @@ async function loadPortfolio() {
                 alert('❌ لقد أعجبت بهذه الصورة من قبل');
                 return;
             }
+            // التأكد من أن الحقل portfolio_id موجود في جدول likes (حسب schema.sql)
             const { error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name }]);
             if (!error) {
-                imgDiv.querySelector('.like-count').textContent = (likes ? likes.length : 0) + 1;
+                // إعادة تحميل عدد الإعجابات بعد الإضافة
+                const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
+                imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : 1;
                 alert('✅ تم تسجيل الإعجاب!');
             } else {
-                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب');
+                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || '')); 
             }
         };
 
-        // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
-        const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
-        const siteUrl = window.location.origin + window.location.pathname;
-        whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: ' + img.image_url + '\n' + siteUrl)}`;
+    // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
+    const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
+    const siteUrl = window.location.origin + window.location.pathname;
+    whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: ' + img.image_url + '\n' + siteUrl)}`;
             // تحقق من وجود إعجاب مسبق
             const { data: existingLike } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
             if (existingLike) {
@@ -1826,6 +1829,7 @@ const security = new SecurityManager();
                 // لا يوجد تعليقات بعد الآن
                 // إضافة إعجاب
                 // لا يوجد إضافة تعليق بعد الآن
+                // ...existing code...
                     const { data: comments } = await supabase
                         .from('comments')
                         .select('*, users(name)')
