@@ -222,8 +222,14 @@ async function loadPortfolio() {
         container.appendChild(imgDiv);
 
         // تحميل عدد الإعجابات
-        const { data: likes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
-        imgDiv.querySelector('.like-count').textContent = likes ? likes.length : 0;
+        let likesCount = 0;
+        try {
+            const { data: likes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
+            likesCount = likes ? likes.length : 0;
+        } catch (err) {
+            likesCount = 0;
+        }
+        imgDiv.querySelector('.like-count').textContent = likesCount;
 
         // منطق الإعجاب
         imgDiv.querySelector('.like-btn').onclick = async function() {
@@ -232,22 +238,27 @@ async function loadPortfolio() {
                 alert('🔒 يجب تسجيل الدخول لتسجيل إعجاب');
                 return;
             }
-            // تحقق من وجود إعجاب مسبق
-            const { data: existingLike } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
-            if (existingLike) {
-                alert('❌ لقد أعجبت بهذه الصورة من قبل');
-                return;
+            try {
+                // تحقق من وجود إعجاب مسبق
+                const { data: existingLike } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
+                if (existingLike) {
+                    alert('❌ لقد أعجبت بهذه الصورة من قبل');
+                    return;
+                }
+                // إضافة إعجاب جديد
+                const { error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name }]);
+                if (!error) {
+                    // إعادة تحميل عدد الإعجابات بعد الإضافة
+                    const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
+                    imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
+                    alert('✅ تم تسجيل الإعجاب!');
+                } else {
+                    alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || '')); 
+                }
+            } catch (err) {
+                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (err.message || '')); 
             }
-            // التأكد من أن الحقل portfolio_id موجود في جدول likes (حسب schema.sql)
-            const { error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name }]);
-            if (!error) {
-                // إعادة تحميل عدد الإعجابات بعد الإضافة
-                const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
-                imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : 1;
-                alert('✅ تم تسجيل الإعجاب!');
-            } else {
-                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || '')); 
-        }
+        };
 
         // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
         const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
