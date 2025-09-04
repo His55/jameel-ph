@@ -269,7 +269,7 @@ async function loadPortfolio() {
                     imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
                 } else {
                     console.error('Supabase Like Error:', error);
-                    alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || JSON.stringify(error)));
+                    alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + JSON.stringify(error));
                 }
             } catch (err) {
                 console.error('Supabase Like Exception:', err);
@@ -722,7 +722,8 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 
-    <!-- Image Lightbox -->
+    <!-- Image Li
+     ghtbox -->
     <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center">
         <div class="relative max-w-4xl max-h-full p-4">
             <img id="lightboxImg" class="max-w-full max-h-full object-contain">
