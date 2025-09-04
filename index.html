@@ -263,7 +263,7 @@ async function loadPortfolio() {
                     alert('❌ لقد أعجبت بهذه الصورة من قبل');
                     return;
                 }
-                const { data: likeData, error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name || '' }]);
+                const { data: likeData, error } = await window.supabase.from('likes').insert([{ portfolio_id: Number(img.id), user_id: Number(user.id), user_name: user.name || '' }]);
                 if (!error) {
                     const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
                     imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
@@ -720,7 +720,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         </div>
-    </div>
+    </div>      
 
     <!-- Image Li
      ghtbox -->
