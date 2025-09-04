@@ -53,6 +53,8 @@
     }
     <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9769053286aff9db',t:'MTc1NjQzODc1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
         <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Supabase SDK: يجب تحميلها قبل أي كود يستخدم supabase -->
+        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         
         <!-- Supabase SDK -->
@@ -61,7 +63,14 @@
         // Supabase Configuration (إعداداتك الصحيحة)
         const SUPABASE_URL = 'https://uspxswigpccxmgujpdpg.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcHhzd2lncGNjeG1ndWpwZHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0MjcxODYsImV4cCI6MjA3MjAwMzE4Nn0.I3hFirAEgcU7L4HGTfTP4h1cCEQFMHT7wDi-1-5AKtY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            } else {
+                console.error('Supabase library not loaded!');
+            }
+        });
         </script>
         
         <style>
@@ -209,6 +218,7 @@
     window.addEventListener('DOMContentLoaded', updateAuthButtons);
     // تحميل الصور مع منطق الإعجاب والواتساب
     async function loadPortfolio() {
+        if (!supabase) { console.error('Supabase not initialized'); return; }
         const { data: images } = await supabase.from('portfolio').select('*').order('created_at', { ascending: false });
         const container = document.getElementById('portfolio-list');
         if (!container) return;
@@ -411,6 +421,7 @@
             });
         }
         async function loadLikesOnly(portfolioId) {
+            if (!supabase) { console.error('Supabase not initialized'); return; }
             const { data: likes } = await supabase
                 .from('likes')
                 .select('portfolio_id,user_id,user_name')
