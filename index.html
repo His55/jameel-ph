@@ -162,6 +162,18 @@ const loginBtnMobile = document.getElementById('login-btn-mobile');
 const registerBtnMobile = document.getElementById('register-btn-mobile');
 const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 
+// إصلاح زر تسجيل الخروج للجوال
+document.addEventListener('DOMContentLoaded', function() {
+    updateAuthButtons();
+    if (logoutBtnMobile) {
+        logoutBtnMobile.addEventListener('click', () => {
+            localStorage.removeItem("user");
+            updateAuthButtons();
+            window.location.reload();
+        });
+    }
+});
+
 function updateAuthButtons() {
     currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser) {
@@ -209,8 +221,8 @@ async function loadPortfolio() {
         imgDiv.innerHTML = `
             <img src="${img.image_url}" alt="${img.title}" class="rounded w-full mb-2 max-h-72 object-contain whatsapp-status-img" style="cursor:pointer;">
             <div class="flex items-center gap-2 mb-2">
-                <button class="like-btn bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1" data-id="${img.id}">
-                    <i class="fas fa-heart"></i> <span class="like-count">0</span>
+                <button class="like-btn bg-yellow-400 text-black px-3 py-1 rounded flex items-center gap-1" data-id="${img.id}">
+                    <i class="fas fa-star"></i> <span class="like-count">0</span>
                 </button>
                 <a class="whatsapp-btn text-green-600 text-xl" title="مشاركة في حالة واتساب" target="_blank">
                     <i class="fab fa-whatsapp"></i>
@@ -231,7 +243,7 @@ async function loadPortfolio() {
         }
         imgDiv.querySelector('.like-count').textContent = likesCount;
 
-        // منطق الإعجاب
+        // منطق الإعجاب (نجمة صفراء)
         imgDiv.querySelector('.like-btn').onclick = async function() {
             const user = JSON.parse(localStorage.getItem('user'));
             if (!user) {
