@@ -246,28 +246,35 @@ async function loadPortfolio() {
         // منطق الإعجاب (إعجاب واحد فقط لكل مستخدم)
         imgDiv.querySelector('.like-btn').onclick = async function() {
             const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
+            // تحقق من وجود المستخدم ووجود معرف صحيح
+            if (!user || !user.id || !img.id || isNaN(Number(user.id)) || isNaN(Number(img.id))) {
                 alert('🔒 يجب تسجيل الدخول لتسجيل إعجاب');
                 return;
             }
             try {
                 // تحقق من وجود إعجاب مسبق
-                const { data: existingLike } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
+                const { data: existingLike, error: checkError } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
+                if (checkError) {
+                    console.error('Supabase Like Check Error:', checkError);
+                    alert('⚠️ حصل خطأ أثناء التحقق من الإعجاب: ' + (checkError.message || ''));
+                    return;
+                }
                 if (existingLike) {
                     alert('❌ لقد أعجبت بهذه الصورة من قبل');
                     return;
                 }
                 // إضافة إعجاب جديد
-                const { error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name }]);
+                const { error } = await window.supabase.from('likes').insert([{ portfolio_id: Number(img.id), user_id: Number(user.id), user_name: user.name || '' }]);
                 if (!error) {
                     // إعادة تحميل عدد الإعجابات بعد الإضافة
                     const { data: newLikes } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id);
                     imgDiv.querySelector('.like-count').textContent = newLikes ? newLikes.length : likesCount + 1;
-                    // إظهار علامة الإعجاب فقط بدون تنبيه
                 } else {
+                    console.error('Supabase Like Error:', error);
                     alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || ''));
                 }
             } catch (err) {
+                console.error('Supabase Like Exception:', err);
                 alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (err.message || ''));
             }
         };
