@@ -52,14 +52,15 @@
         .from('users')
         .select('*')
         .eq('email', email)
-        .eq('password', hashedPassword)
-        .single();
+        .eq('password', hashedPassword);
 
-      if (error || !data) {
+      if (error || !data || (Array.isArray(data) && data.length === 0)) {
         message.textContent = "❌ البريد الإلكتروني أو كلمة المرور غير صحيحة";
         message.className = "text-red-600 text-center mt-4";
       } else {
-        localStorage.setItem("user", JSON.stringify(data));
+        // تخزين أول مستخدم مطابق فقط
+        const userObj = Array.isArray(data) ? data[0] : data;
+        localStorage.setItem("user", JSON.stringify(userObj));
         message.textContent = "✅ تم تسجيل الدخول بنجاح!";
         message.className = "text-green-600 text-center mt-4";
         setTimeout(() => window.location.href = "index.html", 1500);
