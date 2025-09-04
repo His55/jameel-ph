@@ -35,25 +35,21 @@
 
 <!-- Schema.org structured data -->
 <script type="application/ld+json">
-const loginBtnMobile = document.getElementById('login-btn-mobile');
-const registerBtnMobile = document.getElementById('register-btn-mobile');
-const logoutBtnMobile = document.getElementById('logout-btn-mobile');
 {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "جميل غانم",
-  "jobTitle": "مصور فوتوغرافي محترف",
-  "description": "جميل غانم متخصص في التصوير الاحترافي للفعاليات والمنتجات",
-  "url": "https://jameel-ph.github.io/",
-  "sameAs": [
-    "https://github.com/jameel-ph"
-  ],
-  "knowsAbout": ["التصوير الفوتوغرافي", "تصوير الفعاليات", "تصوير المنتجات", "التصوير الاحترافي"],
-  "hasOccupation": {
-    "@type": "Occupation",
-    "name": "مصور فوتوغرافي"
-        };
-    });
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "جميل غانم",
+    "jobTitle": "مصور فوتوغرافي محترف",
+    "description": "جميل غانم متخصص في التصوير الاحترافي للفعاليات والمنتجات",
+    "url": "https://jameel-ph.github.io/",
+    "sameAs": [
+        "https://github.com/jameel-ph"
+    ],
+    "knowsAbout": ["التصوير الفوتوغرافي", "تصوير الفعاليات", "تصوير المنتجات", "التصوير الاحترافي"],
+    "hasOccupation": {
+        "@type": "Occupation",
+        "name": "مصور فوتوغرافي"
+    }
 }
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9769053286aff9db',t:'MTc1NjQzODc1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -251,27 +247,7 @@ async function loadPortfolio() {
                 alert('✅ تم تسجيل الإعجاب!');
             } else {
                 alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب: ' + (error.message || '')); 
-            }
-        };
-
-    // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
-    const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
-    const siteUrl = window.location.origin + window.location.pathname;
-    whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent('شاهد هذه الصورة: ' + img.image_url + '\n' + siteUrl)}`;
-            // تحقق من وجود إعجاب مسبق
-            const { data: existingLike } = await window.supabase.from('likes').select('*').eq('portfolio_id', img.id).eq('user_id', user.id).maybeSingle();
-            if (existingLike) {
-                alert('❌ لقد أعجبت بهذه الصورة من قبل');
-                return;
-            }
-            const { error } = await window.supabase.from('likes').insert([{ portfolio_id: img.id, user_id: user.id, user_name: user.name }]);
-            if (!error) {
-                imgDiv.querySelector('.like-count').textContent = (likes ? likes.length : 0) + 1;
-                alert('✅ تم تسجيل الإعجاب!');
-            } else {
-                alert('⚠️ حصل خطأ أثناء تسجيل الإعجاب');
-            }
-        };
+        }
 
         // زر واتساب: مشاركة الصورة في الحالة مع رابط الموقع
         const whatsappBtn = imgDiv.querySelector('.whatsapp-btn');
@@ -404,17 +380,7 @@ window.addEventListener('DOMContentLoaded', () => {
                                             <span id="likes-count-${item.id}">0</span> إعجاب
                                         </button>
 
-                                        <!-- التعليقات -->
-                                        <div class="mt-4">
-                                            <h4 class="font-bold text-gray-700 mb-2">💬 التعليقات</h4>
-                                            <div id="comments-list-${item.id}" class="space-y-2 mb-2"></div>
-                                            ${user ? `
-                                                <form onsubmit="addComment(event, ${item.id})">
-                                                    <textarea id="comment-${item.id}" placeholder="أضف تعليقك..." class="border rounded p-2 w-full mb-2" required></textarea>
-                                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">إضافة تعليق</button>
-                                                </form>
-                                            ` : `<p class="text-gray-500 text-sm">🔒 يجب تسجيل الدخول لإضافة تعليق</p>`}
-                                        </div>
+                                        <!-- تم حذف التعليقات نهائيًا -->
                                     `;
                                     portfolioGrid.appendChild(div);
                                     // تحميل الإعجابات والتعليقات
